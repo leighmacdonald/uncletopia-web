@@ -1,0 +1,118 @@
+package coordinator
+
+// coordinator intends to provide a service similar to valves own built in
+// matchmaking / game coordinator system.  It's intended to be used from the website
+// to use all the queueing features.
+//
+// - Filter by specific server locations
+// - Filter by selectable radius around the client location
+// - Filter by preselected regions eg: us west, us central, us east, eu, sa
+//
+// For this to work well for all users some caveats will exist.
+//
+// Empty server:
+// - No restrictions on how you can join. via console, server browser or site is all equal.
+//
+// Full server:
+// - People connecting via in-game browser or console will get a (friendlier) message similar to valves
+// "No Ad-Hoc connections can be made..." when trying to join a casual game manually. It will direct them to the
+// website where they can join the queue process.
+// - Automatically allocate in-game failed connection users into the queue at the time they tried to connect. If
+// they decide to then go to the site to sit in the queue, well give them their initial queue position they would
+// have otherwise had.
+// - Super cool queue notification sound bap.wav?
+// - Show queue positions
+// - Show other queued players?
+// - Queued player live chat/mini-games room?
+//
+import (
+	"context"
+	"github.com/leighmacdonald/steamid/v2/steamid"
+	"github.com/pkg/errors"
+	"sync"
+	"time"
+)
+
+type onQueueFn func(*Client) error
+
+type Coordinator struct {
+	// Clients waiting in  FIFO queue
+	clients []*Client
+	// How long a client is given to connect to a server once initiating the queue connection trigger
+	// They will be dropped and the next client takes their position
+	connectionTimeAllowance time.Duration
+	clientsMu               *sync.RWMutex
+	onQueueReady            onQueueFn
+}
+
+func (c *Coordinator) registerOnQueueReady(fn onQueueFn) {
+	c.onQueueReady = fn
+}
+
+func (c *Coordinator) start(ctx context.Context) {
+	clientTimeoutTicker := time.NewTicker(time.Second)
+	for {
+		select {
+		case <-clientTimeoutTicker.C:
+
+		case <-ctx.Done():
+			// Send disconnects to existing queue?
+			return
+		}
+	}
+}
+
+func (c *Coordinator) HandleNewConnection() {
+
+}
+
+func (c *Coordinator) IsQueued(sid steamid.SID64) bool {
+	c.clientsMu.RLock()
+	defer c.clientsMu.RUnlock()
+	for _, client := range c.clients {
+		if client.sid == sid {
+			return true
+		}
+	}
+	return false
+}
+
+func (c *Coordinator) Queue(client *Client) error {
+	if c.IsQueued(client.sid) {
+		return errors.New("duplicate")
+	}
+	c.clients = append(c.clients, client)
+	return nil
+}
+
+func New() Coordinator {
+	return Coordinator{
+		clients:                 nil,
+		connectionTimeAllowance: 60 * time.Second,
+		clientsMu:               &sync.RWMutex{},
+	}
+}
+
+type Client struct {
+	// First queued
+	started time.Time
+	// Last ping/keep-alive
+	update time.Time
+	sid    steamid.SID64
+	// "pl only", "24/7 2fort", etc.
+	gameTypes []string
+	regions   []string
+	// Location
+	lat float64
+	lon float64
+	// Geographic radius (km) from the client position
+	maxDistance float64
+}
+
+func NewClient(sid steamid.SID64) *Client {
+	return &Client{
+		started: time.Now(),
+		update:  time.Now(),
+		sid:     sid,
+	}
+}

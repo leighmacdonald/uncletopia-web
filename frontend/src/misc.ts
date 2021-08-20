@@ -1,44 +1,4 @@
-
-
-// const init_homepage = () => {
-//     const channelID = "UCu0PSyLD5p_J5osLk5UD0pw";
-//     const reqURL = "https://www.youtube.com/feeds/videos.xml?channel_id=";
-//     $.getJSON("https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent(reqURL)+channelID, function(data) {
-//         const link = data.items[0].link;
-//         const id = link.substr(link.indexOf("=")+1);
-//         $("#youtube_video").attr("src","https://youtube.com/embed/"+id + "?controls=0&showinfo=0&rel=0");
-//     });
-//     const elements = document.querySelectorAll(".home_grid video");
-//     for (let i = 0; i < elements.length; i++) {
-//         elements[i].addEventListener("mouseover", (e) => {
-//             const element = e.target as HTMLMediaElement;
-//             element.play();
-//         });
-//         elements[i].addEventListener("mouseleave", (e) => {
-//             const element = e.target as HTMLMediaElement;
-//             element.pause();
-//             element.currentTime = 0;
-//         });
-//     }
-// }
-//
-// const server_click_handler = (evt: any) => {
-//     const target = ((evt.currentTarget)).dataset.toggletarget as string;
-//     if (target !== null && target != "") {
-//         document.getElementById(target)?.classList.toggle("hide")
-//     } else {
-//         evt.preventDefault()
-//     }
-// }
-//
-// const init_servers = () => {
-//     const elements = document.getElementsByClassName("server_info");
-//     for (let i = 0; i < elements.length; i++) {
-//         elements[i].addEventListener("click", server_click_handler);
-//     }
-// }
-
-const eureka = () => {
+export const eureka = () => {
     console.log(`oooo/hMd++oooooooooooooooooooooooooo+oMmoyyyyyyyyyyyyyyyyyyoMM:ssssssssssssssssssssss/yMmosyssssssss`)
     console.log(`ooooo++mMh/oooooooooooooooooooooooooo:mMssyyyyyyyyyyyyyyyysyMy+sssssssssssssssssssso/mMhoyssssssssss`)
     console.log(`ooooooo/sMNs/oooooooooooooooooooooooo++MNoyyyyyyyyyyyyyyyyoNM/ssssssssssssssssssss/sMNssysssssssssss`)

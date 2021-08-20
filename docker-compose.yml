@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  gbans:
+    build:
+      context: "."
+      dockerfile: Dockerfile
+    volumes:
+      - dl_cache:/app/.cache
+      - ./config.yml:/app/config.yml
+    depends_on:
+      - postgres
+    networks:
+      - prod_network
+    environment:
+      UT_DATABASE_DSN: postgresql://uncletopia-web:uncletopia-web@uncletopia-web:5432/uncletopia-web
+      UT_GENERAL_STEAM_KEY: ${GBANS_GENERAL_STEAM_KEY}
+    command: ./uncletopia-web serve
+  postgres:
+    image: postgis/postgis:13-3.1-alpine
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: uncletopia-web
+      POSTGRES_DB: uncletopia-web
+      POSTGRES_PASSWORD: uncletopia-web
+    networks:
+      - prod_network
+
+volumes:
+  dl_cache:
+
+networks:
+  prod_network:

@@ -18,4 +18,6 @@
 /frontend/.cache/
 /frontend/dist/
 /uncledane-web
-/frontend/node_modules/
+node_modules
+/seed.json
+/frontend/yarn-error.log

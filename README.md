@@ -25,7 +25,7 @@ Run the HTTP application server:
 The docker image uses a 3 stage build system. 2 Build stages, one for frontend (JS/CSS/etc.) and the other for
 the go backend. The compiled binaries and assets are then copied to the final image. 
 
-To build the image `leighmacdonald/uncledane-web` run:
+To build the image `leighmacdonald/uncletopia-web` run:
 
     make image
 

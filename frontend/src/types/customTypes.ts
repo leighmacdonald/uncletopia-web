@@ -7,3 +7,4 @@ declare module '*.webp';
 declare module '*.html';
 declare module '*.webm';
 declare module '*.zip';
+declare module '*.css';

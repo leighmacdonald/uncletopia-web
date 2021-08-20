@@ -31,7 +31,7 @@ export const tf2theme = createTheme({
     spacing: 6,
     palette: {
         background: {
-            paper: "#6a4737",
+            paper: "rgb(20, 13, 10)",
             default: "#261812",
         },
         primary: {

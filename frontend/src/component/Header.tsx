@@ -1,75 +1,310 @@
-import Grid from "@material-ui/core/Grid";
-import {Button, ButtonGroup, Paper, Link as MatLink} from "@material-ui/core";
-import {makeStyles} from "@material-ui/core/styles";
-import React from "react";
-import imgHeader from '../images/header_1920_450.jpg'
-import {Link} from "react-router-dom";
+import Grid from '@material-ui/core/Grid';
+import {
+    Paper,
+    Toolbar,
+    AppBar,
+    IconButton,
+    Menu,
+    MenuItem,
+    Button, ListItemIcon, ListItemText, Badge
+} from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
+import React, { forwardRef, useMemo, useState } from 'react';
+import NotificationsIcon from '@material-ui/icons/Notifications';
+import { AccountCircle } from '@material-ui/icons';
+import { RouteComponentProps, Link, withRouter } from 'react-router-dom';
+import Divider from '@material-ui/core/Divider';
+import ExitToAppIcon from '@material-ui/icons/ExitToApp';
+import AccountCircleIcon from '@material-ui/icons/AccountCircle';
+import SettingsIcon from '@material-ui/icons/Settings';
+import { useCurrentUserCtx } from '../ctx/CurrentUserCtx';
+import MoreIcon from '@material-ui/icons/MoreVert';
+// @ts-ignore
+import SteamLogo from '../images/steam_login_sm.png';
+import Typography from '@material-ui/core/Typography';
 
 export interface HeaderLink {
-    title: string
-    url: string
-    submenu?: HeaderLink[]
+    title: string;
+    url: string;
+    submenu?: HeaderLink[];
 }
 
-const useStyles = makeStyles((theme) => ({
-    headerContainer: {
-        position: 'relative',
-        backgroundImage: 'url('+imgHeader+')',
-        backgroundSize: 'cover',
-        backgroundRepeat: 'no-repeat',
-        backgroundPosition: 'center',
-        height: '300px',
-        marginBottom: '3rem'
-    },
-    overlay: {
-        position: 'absolute',
-        top: 0,
-        bottom: 0,
-        right: 0,
-        left: 0,
-        height: '300px',
-    },
-    mainFeaturedPostContent: {
-        position: 'relative',
-        height: '300px',
-        padding: theme.spacing(3),
-        [theme.breakpoints.up('md')]: {
-            padding: theme.spacing(6),
-            paddingRight: 0,
-        },
-    },
-    container: {
+const links: HeaderLink[] = [
+    { title: 'Home', url: '/' },
+    { title: 'Servers', url: '/servers' },
+    { title: 'Donate', url: '/donate' }
+];
 
+const useStyles = makeStyles((theme) => ({
+    root: {
+        display: 'flex'
+    },
+    offset: theme.mixins.toolbar,
+    grow: {
+        flexGrow: 1
+    },
+    sectionDesktop: {
+        display: 'none',
+        [theme.breakpoints.up('md')]: {
+            display: 'flex'
+        }
+    },
+    sectionMobile: {
+        display: 'flex',
+        [theme.breakpoints.up('md')]: {
+            display: 'none'
+        }
+    },
+    toolbar: {
+        flexGrow: 1,
+        backgroundColor: theme.palette.background.paper
     },
     buttons: {
-        backgroundColor: theme.palette.secondary.main,
+        // fontFamily: theme.typography.fontFamily,
+        color: '#fde1c7'
     }
 }));
 
-const MenuButton = (link: HeaderLink): JSX.Element => {
-    return <Button disableElevation component={Link} variant="contained" color={"secondary"} to={link.url}>{link.title}</Button>
+export const handleOnLogin = (): void => {
+    const r = `${window.location.protocol}//${window.location.hostname}/auth/callback?return_url=${window.location.pathname}`;
+    // noinspection HttpUrlsUsage
+    const oid =
+        'https://steamcommunity.com/openid/login' +
+        '?openid.ns=' +
+        encodeURIComponent('http://specs.openid.net/auth/2.0') +
+        '&openid.mode=checkid_setup' +
+        '&openid.return_to=' +
+        encodeURIComponent(r) +
+        `&openid.realm=` +
+        encodeURIComponent(
+            `${window.location.protocol}//${window.location.hostname}`
+        ) +
+        '&openid.ns.sreg=' +
+        encodeURIComponent('http://openid.net/extensions/sreg/1.1') +
+        '&openid.claimed_id=' +
+        encodeURIComponent(
+            'http://specs.openid.net/auth/2.0/identifier_select'
+        ) +
+        '&openid.identity=' +
+        encodeURIComponent(
+            'http://specs.openid.net/auth/2.0/identifier_select'
+        );
+    window.open(oid, '_self');
+};
+
+interface GLinkProps {
+    icon?: string | JSX.Element;
+    primary: string;
+    to: string;
 }
 
-export const Header = (props: { links: HeaderLink[]}) => {
+export const GLink = ({ primary, to }: GLinkProps): JSX.Element => {
     const classes = useStyles();
+    const CustomLink = useMemo(() => {
+        const f = forwardRef<HTMLAnchorElement>((linkProps, ref) => (
+            <Link ref={ref} to={to} {...linkProps} />
+        ));
+        f.displayName = 'GLink';
+        return f;
+    }, [to]);
     return (
-        <Paper className={classes.headerContainer}>
-            <div className={classes.overlay} />
-            <Grid container>
-                <Grid item md={6}>
-                    <div className={classes.mainFeaturedPostContent}>
-                        <MatLink variant="subtitle1" href="#">
-                            {"bap"}
-                        </MatLink>
-                    </div>
-                </Grid>
+        <Button component={CustomLink} className={classes.buttons}>
+            {primary}
+        </Button>
+    );
+};
 
-                <Grid item xs={12} className={classes.buttons}>
-                    <ButtonGroup disableElevation variant="contained" color="primary" aria-label="contained primary button group">
-                    {props.links.map(((l, i) => {return <MenuButton {...l} key={`${i}-${l.url}`}/>}))}
-                    </ButtonGroup>
+export function RenderMenuButton(link: HeaderLink) {
+    return <GLink primary={link.title} to={link.url} />;
+}
+
+const TopBar = ({ history }: RouteComponentProps): JSX.Element => {
+    const classes = useStyles();
+    const [anchorEl, setAnchorEl] = React.useState(null);
+    const [anchorProfileMenuEl, setAnchorProfileMenuEl] =
+        useState<Element | null>(null);
+    const [mobileMoreAnchorEl, setMobileMoreAnchorEl] =
+        useState<Element | null>(null);
+
+    const isProfileMenuOpen = Boolean(anchorProfileMenuEl);
+    const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
+    const { currentUser } = useCurrentUserCtx();
+
+    const handleProfileMenuOpen = (event: React.MouseEvent) => {
+        setAnchorProfileMenuEl(event.currentTarget);
+    };
+
+    const handleMobileMenuClose = () => {
+        setMobileMoreAnchorEl(null);
+    };
+
+    const handleProfileMenuClose = () => {
+        setAnchorProfileMenuEl(null);
+        handleMobileMenuClose();
+    };
+
+    const handleMobileMenuOpen = (event: React.MouseEvent) => {
+        setMobileMoreAnchorEl(event.currentTarget);
+    };
+
+    const open = Boolean(anchorEl);
+
+    const loadRoute = (route: string) => {
+        history.push(route);
+        handleProfileMenuClose();
+        handleMobileMenuClose();
+    };
+
+    const renderLinkedMenuItem = (
+        text: string,
+        route: string,
+        icon: JSX.Element
+    ) => (
+        <MenuItem onClick={() => loadRoute(route)}>
+            <ListItemIcon>{icon}</ListItemIcon>
+            <ListItemText primary={text} />
+        </MenuItem>
+    );
+    const handleUserMenu = (event: any) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleUserMenuClose = () => {
+        setAnchorEl(null);
+    };
+
+    const menuId = 'primary-menu';
+
+    const renderProfileMenu = (
+        <Menu
+            anchorEl={anchorProfileMenuEl}
+            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+            id={menuId}
+            keepMounted
+            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+            open={isProfileMenuOpen}
+            onClose={handleProfileMenuClose}
+        >
+            {renderLinkedMenuItem('Profile', '/profile', <AccountCircleIcon />)}
+            {renderLinkedMenuItem('Settings', '/settings', <SettingsIcon />)}
+            <Divider light />
+            {renderLinkedMenuItem('Logout', '/logout', <ExitToAppIcon />)}
+        </Menu>
+    );
+    //const perms = parseInt(localStorage.getItem('permission_level') || '1');
+    const mobileMenuId = 'primary-menu-mobile';
+    const renderMobileMenu = (
+        <Menu
+            anchorEl={mobileMoreAnchorEl}
+            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+            id={mobileMenuId}
+            keepMounted
+            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+            open={isMobileMenuOpen}
+            onClose={handleMobileMenuClose}
+        >
+            <MenuItem>
+                <IconButton
+                    aria-label='show 0 new notifications'
+                    color='inherit'
+                >
+                    <Badge badgeContent={0} color='secondary'>
+                        <NotificationsIcon />
+                    </Badge>
+                </IconButton>
+                <p>Notifications</p>
+            </MenuItem>
+            <MenuItem onClick={handleProfileMenuOpen}>
+                <IconButton
+                    aria-label='account of current user'
+                    aria-controls='primary-menu'
+                    aria-haspopup='true'
+                    color='inherit'
+                >
+                    <AccountCircle />
+                </IconButton>
+                <p>Profile</p>
+            </MenuItem>
+        </Menu>
+    );
+
+    return (
+        <>
+            <AppBar position='fixed'>
+                <Toolbar variant={'regular'} className={classes.toolbar} disableGutters={false}>
+                    <Typography variant="h3" style={{marginRight: "1rem"}}>
+                        Uncletopia
+                    </Typography>
+                    {links.map(props => <RenderMenuButton key={`m-${props.title}`} {...props} />)}
+                    <div className={classes.grow} />
+                    <IconButton
+                        aria-label='account of current user'
+                        aria-controls='menu-appbar'
+                        aria-haspopup='true'
+                        onClick={handleUserMenu}
+                        color='inherit'
+                    >
+                        <AccountCircle />
+                    </IconButton>
+
+                    <div className={classes.sectionDesktop}>
+                        {!currentUser.player ||
+                        (currentUser?.player.steam_id === '' && (
+                            <Button onClick={handleOnLogin}>
+                                <img
+                                    src={SteamLogo}
+                                    alt={'Steam Login'}
+                                />
+                            </Button>
+                        ))}
+                        <Menu
+                            id='menu-appbar'
+                            anchorEl={anchorEl}
+                            anchorOrigin={{
+                                vertical: 'top',
+                                horizontal: 'right'
+                            }}
+                            keepMounted
+                            transformOrigin={{
+                                vertical: 'top',
+                                horizontal: 'right'
+                            }}
+                            open={open}
+                            onClose={handleUserMenuClose}
+                        >
+                            <MenuItem onClick={handleUserMenuClose}>Profile</MenuItem>
+                            <MenuItem onClick={handleUserMenuClose}>My account</MenuItem>
+                        </Menu>
+                    </div>
+                    <div className={classes.sectionMobile}>
+                        <IconButton
+                            aria-label='show more'
+                            aria-controls={mobileMenuId}
+                            aria-haspopup='true'
+                            onClick={handleMobileMenuOpen}
+                            color='inherit'
+                        >
+                            <MoreIcon />
+                        </IconButton>
+                    </div>
+                </Toolbar>
+            </AppBar>
+            <div className={classes.offset} />
+            {renderMobileMenu}
+            {renderProfileMenu}
+        </>
+    );
+};
+const TopBarWithRouter = withRouter(TopBar);
+
+export const Header = () => {
+    return (
+        <Paper style={{marginBottom:"2rem"}}>
+            <Grid container>
+                <Grid item md={12}>
+                    <TopBarWithRouter />
                 </Grid>
             </Grid>
         </Paper>
-    )
-}
+    );
+};

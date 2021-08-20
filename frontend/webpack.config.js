@@ -1,7 +1,6 @@
 const path = require('path')
 const CopyPlugin = require("copy-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
     entry: path.resolve(__dirname, './src/index.tsx'),
@@ -23,9 +22,10 @@ module.exports = {
                 use: {loader: "ts-loader"},
             },
             {
-                test: /\.s[ac]ss$/i,
+                test: /\.s?[ac]ss$/i,
                 use: [
                     "style-loader",
+                    MiniCssExtractPlugin.loader,
                     // Creates `style` nodes from JS strings
                     // process.env.NODE_ENV !== "production"
                     //     ? "style-loader"
@@ -63,9 +63,9 @@ module.exports = {
                 { from: "src/index.html", to: "index.html" },
             ],
         }),
-        // new MiniCssExtractPlugin({
-        //     filename: "index.css",
-        //     chunkFilename: "index.css",
-        // }),
+        new MiniCssExtractPlugin({
+            filename: "index.css",
+            chunkFilename: "index.css",
+        }),
     ],
 }

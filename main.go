@@ -1,6 +1,6 @@
 package main
 
-import "github.com/leighmacdonald/uncledane-web/cmd"
+import "github.com/leighmacdonald/uncletopia-web/cmd"
 
 func main() {
 	cmd.Execute()

@@ -6,6 +6,12 @@ order:
   - US-East
   - EU-Central
 
+patreon:
+  client_id:
+  client_secret:
+  access_token:
+  refresh_token:
+
 servers:
   - host: us1.uncledane.com
     port: 27015
