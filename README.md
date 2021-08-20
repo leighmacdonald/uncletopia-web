@@ -1,38 +1,16 @@
-# uncledane.com
+# uncletopia.com
 
 ## Configure
 
-Copy the `config_example.yml` to `config.yml`. You should only need
-to edit the TF2 server details normally.
+Copy the `config_example.yml` to `config.yml`. 
 
+## Docs 
 
-## Dev
+No docs yet. See docker-compose.yml to figure out how to run it for now.
 
-To build the binary:
+## Stack
 
-    make
-
-Watch and compile frontend assets:
-    
-    make watch
-    
-Run the HTTP application server:
-
-    make run
-
-## Docker
-
-The docker image uses a 3 stage build system. 2 Build stages, one for frontend (JS/CSS/etc.) and the other for
-the go backend. The compiled binaries and assets are then copied to the final image. 
-
-To build the image `leighmacdonald/uncletopia-web` run:
-
-    make image
-
-To run the image:
-
-    make run_image
-    
-Or
-
-    docker run --rm -p 8003:8003 -v "$(pwd)/config.yaml:/app/config.yaml" leighmacdonald/uncledane-web:latest
+- golang
+- typescript
+- react
+- postgresql
