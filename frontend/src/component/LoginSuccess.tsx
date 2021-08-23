@@ -2,6 +2,9 @@ import { PermissionLevel } from '../api';
 import { Redirect } from 'react-router-dom';
 import React from 'react';
 
+/**
+ * This is what the user gets redirected to after a successful steam openid redirect.
+ */
 export const LoginSuccess = (): JSX.Element => {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');

@@ -7,12 +7,18 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/gomarkdown/markdown"
+	"github.com/gomarkdown/markdown/html"
 	"github.com/leighmacdonald/steamid/v2/extra"
 	"github.com/leighmacdonald/steamid/v2/steamid"
 	"github.com/leighmacdonald/steamweb"
 	"github.com/leighmacdonald/uncletopia-web/internal/config"
+	"github.com/leighmacdonald/uncletopia-web/internal/donation"
+	"github.com/leighmacdonald/uncletopia-web/internal/servers"
 	"github.com/leighmacdonald/uncletopia-web/internal/store"
+	"github.com/leighmacdonald/uncletopia-web/pkg/coordinator"
 	"github.com/pkg/errors"
+	"github.com/rumblefrog/go-a2s"
 	log "github.com/sirupsen/logrus"
 	"github.com/yohcop/openid-go"
 	"io"
@@ -69,45 +75,62 @@ func currentPerson(c *gin.Context) *store.Person {
 }
 
 func onApiWhoAmI() gin.HandlerFunc {
-	type resp struct {
-		Player  *store.Person            `json:"player"`
-		Friends []steamweb.PlayerSummary `json:"friends"`
-	}
 	return func(c *gin.Context) {
-		p := currentPerson(c)
-		if !p.SteamID.Valid() {
-			responseErr(c, http.StatusForbidden, nil)
-			return
-		}
-		friendList, err := steamweb.GetFriendList(p.SteamID)
-		if err != nil {
-			responseErr(c, http.StatusServiceUnavailable, "Could not fetch friends")
-			return
-		}
-		var friendIds steamid.Collection
-		for _, f := range friendList {
-			friendIds = append(friendIds, f.Steamid)
-		}
-		friends, err := steamweb.PlayerSummaries(friendIds)
-		if err != nil {
-			responseErr(c, http.StatusServiceUnavailable, "Could not fetch summaries")
-			return
-		}
-		var response resp
-		response.Player = p
-		response.Friends = friends
-		responseOK(c, http.StatusOK, response)
+		//if !p.SteamID.Valid() {
+		//	responseErr(c, http.StatusForbidden, nil)
+		//	return
+		//}
+		//friendList, err := steamweb.GetFriendList(p.SteamID)
+		//if err != nil && !strings.Contains(err.Error(), "Invalid status code") {
+		//	responseErr(c, http.StatusServiceUnavailable, "Could not fetch friends")
+		//	return
+		//}
+		//var friendIds steamid.Collection
+		//for _, f := range friendList {
+		//	friendIds = append(friendIds, f.Steamid)
+		//}
+		//friends, err := steamweb.PlayerSummaries(friendIds)
+		//if err != nil && len(friendIds) > 0 {
+		//	responseErr(c, http.StatusServiceUnavailable, "Could not fetch summaries")
+		//	return
+		//}
+		responseOK(c, http.StatusOK, currentPerson(c))
 	}
 }
-func onApiServers(db store.StorageInterface) gin.HandlerFunc {
+
+func onApiNews(db store.StorageInterface) gin.HandlerFunc {
+	opts := html.RendererOptions{
+		Flags: html.CommonFlags,
+	}
+	renderer := html.NewRenderer(opts)
 	return func(c *gin.Context) {
-		servers, err := db.Servers(context.Background())
+		var rendered []store.News
+		news, err := db.News(c, false)
+		if err != nil {
+			responseErr(c, http.StatusInternalServerError, "Internal error")
+			return
+		}
+		for _, n := range news {
+			n.BodyHTML = string(markdown.ToHTML([]byte(n.BodyMD), nil, renderer))
+			rendered = append(rendered, n)
+		}
+		responseOK(c, http.StatusOK, rendered)
+	}
+}
+
+func onApiServers(db store.StorageInterface) gin.HandlerFunc {
+	type st struct {
+		*store.Server
+		A2S *a2s.ServerInfo `json:"a2s"`
+	}
+	return func(c *gin.Context) {
+		srvs, err := db.Servers(context.Background())
 		if err != nil {
 			responseErr(c, http.StatusInternalServerError, "Internal error")
 			return
 		}
 
-		for i, s := range servers {
+		for i, s := range srvs {
 			pc := int(rand.Int31n(24))
 			if i%2 == 0 {
 				pc = 24
@@ -118,11 +141,44 @@ func onApiServers(db store.StorageInterface) gin.HandlerFunc {
 				PlayersCount: pc,
 			}
 		}
-		responseOK(c, http.StatusOK, servers.FilterEnabled())
+		var x []st
+		states := servers.Servers()
+		for _, srv := range srvs {
+			x = append(x, st{Server: srv, A2S: states[srv.NameShort]})
+		}
+		responseOK(c, http.StatusOK, x)
 	}
 }
 
-func New(db store.StorageInterface) (http.Handler, error) {
+type coordClientReq struct {
+	Sid steamid.SID64 `json:"sid"`
+}
+
+func onCoordinatorConnect(coord *coordinator.Coordinator) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var req coordClientReq
+		if err := c.BindJSON(&req); err != nil {
+			responseErr(c, http.StatusInternalServerError, nil)
+			return
+		}
+		coord.ClientConnected(coordinator.NewClient(req.Sid, c.ClientIP(), &coordinator.Filters{}))
+		responseOK(c, http.StatusNoContent, nil)
+	}
+}
+
+func onCoordinatorDisconnect(coord *coordinator.Coordinator) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var req coordClientReq
+		if err := c.BindJSON(&req); err != nil {
+			responseErr(c, http.StatusInternalServerError, nil)
+			return
+		}
+		coord.ClientDisconnected(coordinator.NewClient(req.Sid, c.ClientIP(), &coordinator.Filters{}))
+		responseOK(c, http.StatusNoContent, nil)
+	}
+}
+
+func New(db store.StorageInterface, coord *coordinator.Coordinator) (http.Handler, error) {
 	r := gin.Default()
 	staticPath := config.HTTP.StaticPath
 	if staticPath == "" {
@@ -134,14 +190,18 @@ func New(db store.StorageInterface) (http.Handler, error) {
 		return nil, errors.Wrapf(err, "Could not read %s", idxPath)
 	}
 	r.Static("/static", staticPath)
-	for _, p := range []string{"/", "/settings", "/credits", "/donate", "/servers", "/login/success"} {
+	for _, p := range []string{"/", "/settings", "/credits", "/donate", "/servers", "/login/success",
+		"/profile", "/maps", "/rules", "/404"} {
 		r.GET(p, func(c *gin.Context) {
 			c.Data(200, "text/html", idx)
 		})
 	}
+	r.POST("/coordinator/connect", onCoordinatorConnect(coord))
+	r.POST("/coordinator/disconnect", onCoordinatorDisconnect(coord))
 	r.GET("/api/servers", onApiServers(db))
-	r.GET("/auth/callback", onOpenIDCallback())
-	r.GET("/patreon/callback", onPatreonCallback())
+	r.GET("/api/news", onApiNews(db))
+	r.GET("/auth/callback", onOpenIDCallback(db))
+	r.GET("/patreon/callback", onPatreonCallback(db))
 	r.GET("/embed", func(c *gin.Context) {
 		c.JSON(200, M{
 			"version":       "1.0",
@@ -156,7 +216,7 @@ func New(db store.StorageInterface) (http.Handler, error) {
 	})
 
 	// Basic logged in user
-	authed := r.Use(authMiddleware(store.PAuthenticated))
+	authed := r.Use(authMiddleware(store.PAuthenticated, db))
 	authed.GET("/api/whoami", onApiWhoAmI())
 
 	// Admin access
@@ -242,7 +302,7 @@ func (n *noOpDiscoveryCache) Get(_ string) openid.DiscoveredInfo {
 var nonceStore = openid.NewSimpleNonceStore()
 var discoveryCache = &noOpDiscoveryCache{}
 
-func onOpenIDCallback() gin.HandlerFunc {
+func onOpenIDCallback(db store.StorageInterface) gin.HandlerFunc {
 	oidRx := regexp.MustCompile(`^https://steamcommunity\.com/openid/id/(\d+)$`)
 	return func(c *gin.Context) {
 		ref, found := c.GetQuery("return_url")
@@ -267,16 +327,27 @@ func onOpenIDCallback() gin.HandlerFunc {
 			c.Redirect(302, ref)
 			return
 		}
-		//p := &steamweb.PlayerSummary{}
-		//s, errS := steamweb.PlayerSummaries(steamid.Collection{})
-		//
-		//
-		//p, ok := res.Value.(*model.Person)
-		//if !ok {
-		//	log.Errorf("Failed to cast user profile")
-		//	c.Redirect(302, ref)
-		//	return
-		//}
+		person, errF := db.Person(c, sid)
+		if errF != nil {
+			if errF != store.ErrNoResult {
+				log.Printf("Error verifying: %q\n", err)
+				c.Redirect(302, ref)
+				return
+			}
+			person = store.NewPerson(sid)
+		}
+		summaries, errSum := steamweb.PlayerSummaries(steamid.Collection{sid})
+		if errSum != nil || len(summaries) == 0 {
+			log.Warnf("Failed to fetch player profile: %v", errSum)
+		}
+		person.SteamProfile = &summaries[0]
+
+		if errSave := db.PersonSave(c, person); errSave != nil {
+			log.Printf("Error saving person: %q\n", errSave)
+			c.Redirect(302, ref)
+			return
+		}
+
 		u, errParse := url.Parse("/login/success")
 		if errParse != nil {
 			c.Redirect(302, ref)
@@ -366,7 +437,7 @@ func onTokenRefresh() gin.HandlerFunc {
 	}
 }
 
-func authMiddleware(level store.Privilege) gin.HandlerFunc {
+func authMiddleware(level store.Privilege, db store.StorageInterface) gin.HandlerFunc {
 	type header struct {
 		Authorization string `header:"Authorization"`
 	}
@@ -388,19 +459,19 @@ func authMiddleware(level store.Privilege) gin.HandlerFunc {
 				c.AbortWithStatus(http.StatusForbidden)
 				return
 			}
-			//cx, cancel := context.WithTimeout(context.Background(), time.Second*6)
-			//defer cancel()
-			//loggedInPerson, err := store.GetPersonBySteamID(cx, sid)
-			//if err != nil {
-			//	log.Errorf("Failed to load persons session user: %v", err)
-			//	c.AbortWithStatus(http.StatusForbidden)
-			//	return
-			//}
-			//if level > loggedInPerson.PermissionLevel {
-			//	c.AbortWithStatus(http.StatusForbidden)
-			//	return
-			//}
-			c.Set("person", sid)
+			cx, cancel := context.WithTimeout(context.Background(), time.Second*6)
+			defer cancel()
+			loggedInPerson, err := db.Person(cx, sid)
+			if err != nil {
+				log.Errorf("Failed to load persons session user: %v", err)
+				c.AbortWithStatus(http.StatusForbidden)
+				return
+			}
+			if level > loggedInPerson.PermissionLevel {
+				c.AbortWithStatus(http.StatusForbidden)
+				return
+			}
+			c.Set("person", loggedInPerson)
 		}
 		c.Next()
 	}
@@ -430,15 +501,7 @@ func sid64FromJWTToken(token string) (steamid.SID64, error) {
 	return sid, nil
 }
 
-type PatreonUserToken struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
-	ExpiresIn    int    `json:"expires_in"`
-	Scope        string `json:"scope"`
-	TokenType    string `json:"token_type"`
-}
-
-func onPatreonCallback() gin.HandlerFunc {
+func onPatreonCallback(db store.StorageInterface) gin.HandlerFunc {
 	type patreonError struct {
 		Error string `json:"error"`
 	}
@@ -468,8 +531,22 @@ func onPatreonCallback() gin.HandlerFunc {
 			c.String(http.StatusBadRequest, "invalid request")
 			return
 		}
+		statePcs := strings.Split(state, "----")
+		sid, err := sid64FromJWTToken(statePcs[0])
+		if err != nil {
+			log.Errorf("Failed to load persons session user: %v", err)
+			c.AbortWithStatus(http.StatusForbidden)
+			return
+		}
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 		defer cancel()
+
+		person, errP := db.Person(ctx, sid)
+		if errP != nil {
+			log.Errorf("Failed to load persons session user: %v", err)
+			c.AbortWithStatus(http.StatusForbidden)
+			return
+		}
 
 		form := url.Values{}
 		form.Set("code", code)
@@ -503,9 +580,37 @@ func onPatreonCallback() gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
-		var put PatreonUserToken
+		put := store.NewPatreonAuth(person.SteamID)
 		if errD := decode(resp.Body, &put); errD != nil {
 			log.Errorf("Faile to decode error message: %v", errD)
+		}
+		if errS := db.PatreonAuthSave(ctx, &put); errS != nil {
+			log.WithError(errS).Errorf("Failed to save patreon token: %s", errS)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		pc, errPc := donation.NewPatreonClient(&put)
+		if errPc != nil {
+			log.WithError(errPc).Errorf("Failed to create patreon client: %s", errPc)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		u, errFu := pc.FetchUser()
+		if errFu != nil {
+			log.WithError(errPc).Errorf("Failed to fetch patreon user info: %s", errFu)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		person.PatreonUserID = u.Data.ID
+		if errUs := db.PersonSave(c, person); errUs != nil {
+			log.WithError(errPc).Errorf("Failed to save patreon user id: %s", errUs)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		if errPUS := db.PatreonUserSave(ctx, &u.Data); errPUS != nil {
+			log.WithError(errPc).Errorf("Failed to save patreon user info: %s", errPUS)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
 		}
 		c.Redirect(http.StatusTemporaryRedirect, "/donate")
 		log.WithFields(log.Fields{

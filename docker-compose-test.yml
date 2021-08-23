@@ -1,38 +1,35 @@
 version: "3.8"
 
 services:
-  uncletopia:
+  gbans:
     build:
       context: "."
       dockerfile: Dockerfile
     volumes:
       - dl_cache:/app/.cache
-      - ./config.yaml:/app/config.yaml
+      - ./config.yml:/app/config.yml
     depends_on:
       - postgres
     networks:
-      - prod_network
-    ports:
-      - "8004:8004"
+      - test_network
     environment:
-      UT_DATABASE_DSN: postgresql://uncletopia-web:uncletopia-web@postgres:5432/uncletopia-web
-      UT_GENERAL_STEAM_KEY: ${UT_STEAM_KEY}
-    command: ./uncletopia-web
-
+      UT_DATABASE_DSN: postgresql://uncletopia-web:uncletopia-web@uncletopia-web:5433/uncletopia-web
+      UT_GENERAL_STEAM_KEY: ${GBANS_GENERAL_STEAM_KEY}
+    command: make test
   postgres:
     image: postgis/postgis:13-3.1-alpine
     restart: always
     ports:
-      - "5432:5432"
+      - "5433:5432"
     environment:
       POSTGRES_USER: uncletopia-web
       POSTGRES_DB: uncletopia-web
       POSTGRES_PASSWORD: uncletopia-web
     networks:
-      - prod_network
+      - test_network
 
 volumes:
   dl_cache:
 
 networks:
-  prod_network:
+  test_network:

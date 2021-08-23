@@ -1,4 +1,3 @@
-
 export interface apiResponse<T> {
     status: boolean;
     resp: Response;
@@ -69,7 +68,7 @@ export enum communityVisibilityState {
     Public = 3
 }
 
-export interface Person {
+export interface SteamProfile {
     // PlayerSummaries shape
     steamid: string;
     communityvisibilitystate: communityVisibilityState;
@@ -88,44 +87,51 @@ export interface Person {
     loccountrycode: string;
     locstatecode: string;
     loccityid: number;
-
-    // Custom attributes
-    steam_id: string;
-    ip_addr: string;
-    created_on: Date;
-    updated_on: Date;
 }
 
-export interface PlayerProfile {
-    player: Person;
+export interface Person {
+    steam_id: string;
+    patreon_user_id: string;
+    permission_level: PermissionLevel;
+    last_login: string;
+    created_on: string;
+    updated_on: string;
+    steam_profile: SteamProfile;
     friends: Person[];
 }
 
 export interface ServerState {
-    PlayersCount: number
-    PlayersMax: number
-    ServerName: string
-    Version: string
-    Edicts: number[]
-    Tags: string[]
-    Map: string
-    Players: any
+    Name: string;
+    Players: number;
+    MaxPlayers: number;
+    Version: string;
+    Map: string;
 }
 
 export interface Server {
-    server_id: number
-    name_short: string
-    name_long: string
-    host: string
-    port: number
-    password_required: boolean
-    region: string
-    is_enabled: boolean
-    cc: string
-    latitude: number
-    longitude: number
-    last_has_players: Date
-    state: ServerState
+    server_id: number;
+    name_short: string;
+    name_long: string;
+    host: string;
+    port: number;
+    password_required: boolean;
+    region: string;
+    is_enabled: boolean;
+    cc: string;
+    latitude: number;
+    longitude: number;
+    last_has_players: Date;
+    a2s: ServerState;
+}
+
+export interface News {
+    news_id: number
+    title: string
+    body_md: string
+    body_html: string
+    created_on: string
+    updated_on: string
+    publish_on: string
 }
 
 export enum PermissionLevel {
@@ -137,23 +143,26 @@ export enum PermissionLevel {
 }
 
 export const fetchServers = async () => {
-    const resp = await call<Server[]>("/api/servers", "get")
+    const resp = await call<Server[]>('/api/servers', 'get');
     return resp.json;
-}
+};
 
-export const getCurrentProfile = async (): Promise<
-    PlayerProfile | apiError
-    > => {
-    const resp = await call<PlayerProfile>(`/api/whoami`, 'GET');
+export const getCurrentProfile = async (): Promise<Person | apiError> => {
+    const resp = await call<Person>(`/api/whoami`, 'GET');
     return resp.json;
 };
 
 export const getProfile = async (
     query: string
-): Promise<PlayerProfile | apiError> => {
-    const resp = await call<PlayerProfile>(
+): Promise<Person | apiError> => {
+    const resp = await call<Person>(
         `/api/profile?query=${query}`,
         'GET'
     );
+    return resp.json;
+};
+
+export const getNews = async (): Promise<News[] | apiError> => {
+    const resp = await call<News[]>(`/api/news`, 'GET');
     return resp.json;
 };

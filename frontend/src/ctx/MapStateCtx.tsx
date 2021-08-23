@@ -12,6 +12,12 @@ export type MapState = {
 
     servers: Server[];
     setServers: (servers: Server[]) => void;
+
+    selectedServers: Server[];
+    setSelectedServers: (servers: Server[]) => void;
+
+    filterByRegion: boolean;
+    setFilterByRegion: (enable: boolean) => void;
 };
 
 export const MapStateCtx = createContext<MapState>({
@@ -20,7 +26,11 @@ export const MapStateCtx = createContext<MapState>({
     customRange: 1500,
     setCustomRange: noop,
     servers: [],
-    setServers: noop
+    setServers: noop,
+    selectedServers: [],
+    setSelectedServers: noop,
+    filterByRegion: true,
+    setFilterByRegion: noop
 });
 
 export const useMapStateCtx = () => useContext(MapStateCtx);

@@ -4,17 +4,21 @@ import (
 	"context"
 	"crypto/tls"
 	"github.com/leighmacdonald/uncletopia-web/internal/config"
+	"github.com/leighmacdonald/uncletopia-web/internal/servers"
 	"github.com/leighmacdonald/uncletopia-web/internal/store"
 	"github.com/leighmacdonald/uncletopia-web/internal/web"
+	"github.com/leighmacdonald/uncletopia-web/pkg/coordinator"
 	log "github.com/sirupsen/logrus"
 	"net/http"
+	"time"
 )
 
 type App struct {
-	ctx    context.Context
-	store  store.StorageInterface
-	router http.Handler
-	http   *http.Server
+	ctx         context.Context
+	store       store.StorageInterface
+	router      http.Handler
+	http        *http.Server
+	coordinator *coordinator.Coordinator
 }
 
 func (a App) Start() {
@@ -25,15 +29,19 @@ func (a App) Start() {
 }
 
 func New() (*App, error) {
+	ctx := context.Background()
+	c := coordinator.New()
+
 	s, errStore := store.New(config.Database.DSN)
 	if errStore != nil {
 		return nil, errStore
 	}
 
-	w, errWeb := web.New(s)
+	w, errWeb := web.New(s, c)
 	if errWeb != nil {
 		return nil, errWeb
 	}
+
 	opts := web.DefaultHTTPOpts()
 	h := &http.Server{
 		Addr:           opts.ListenAddr,
@@ -64,11 +72,33 @@ func New() (*App, error) {
 		}
 		h.TLSConfig = tlsVar
 	}
-
+	go func() {
+		doUpdate := func(x context.Context) {
+			sc, cancel := context.WithTimeout(ctx, time.Second*5)
+			defer cancel()
+			serverCol, err := s.Servers(sc)
+			if err != nil {
+				log.Errorf("Failed to fetch servers to update")
+				return
+			}
+			servers.Update(serverCol)
+		}
+		t := time.NewTicker(time.Second * 30)
+		doUpdate(ctx)
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-t.C:
+				doUpdate(ctx)
+			}
+		}
+	}()
 	return &App{
-		ctx:    context.Background(),
-		store:  s,
-		router: w,
-		http:   h,
+		ctx:         ctx,
+		store:       s,
+		router:      w,
+		http:        h,
+		coordinator: c,
 	}, nil
 }

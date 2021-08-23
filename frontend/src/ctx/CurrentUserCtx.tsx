@@ -1,17 +1,22 @@
 import { createContext, useContext } from 'react';
-import { communityVisibilityState, PlayerProfile } from '../api';
+import { communityVisibilityState, PermissionLevel, Person } from '../api';
 import { noop } from 'lodash-es';
 
-export const GuestProfile: PlayerProfile = {
-    player: {
+export const GuestProfile: Person = {
+    created_on: '',
+    last_login: '',
+    updated_on: '',
+    steam_id: '',
+    patreon_user_id: '',
+    permission_level: PermissionLevel.Guest,
+    friends: [],
+    steam_profile: {
         personaname: 'Guest',
         avatar: '',
         avatarfull: '',
         avatarhash: '',
         avatarmedium: '',
         communityvisibilitystate: communityVisibilityState.Private,
-        created_on: new Date(),
-        ip_addr: '',
         loccityid: 0,
         loccountrycode: '',
         locstatecode: '',
@@ -21,17 +26,14 @@ export const GuestProfile: PlayerProfile = {
         profilestate: 0,
         profileurl: '',
         realname: '',
-        steam_id: '',
         steamid: '',
-        timecreated: 0,
-        updated_on: new Date()
-    },
-    friends: []
+        timecreated: 0
+    }
 };
 
 export type CurrentUser = {
-    currentUser: PlayerProfile;
-    setCurrentUser: (profile: PlayerProfile) => void;
+    currentUser: Person;
+    setCurrentUser: (profile: Person) => void;
 };
 
 export const CurrentUserCtx = createContext<CurrentUser>({

@@ -32,6 +32,8 @@ export interface HeaderLink {
 const links: HeaderLink[] = [
     { title: 'Home', url: '/' },
     { title: 'Servers', url: '/servers' },
+    { title: 'Maps', url: '/maps' },
+    { title: 'Rules', url: '/rules' },
     { title: 'Donate', url: '/donate' }
 ];
 
@@ -232,49 +234,51 @@ const TopBar = ({ history }: RouteComponentProps): JSX.Element => {
         <>
             <AppBar position='fixed'>
                 <Toolbar variant={'regular'} className={classes.toolbar} disableGutters={false}>
-                    <Typography variant="h3" style={{marginRight: "1rem"}}>
+                    <Typography variant='h3' style={{ marginRight: '1rem' }}>
                         Uncletopia
                     </Typography>
                     {links.map(props => <RenderMenuButton key={`m-${props.title}`} {...props} />)}
                     <div className={classes.grow} />
-                    <IconButton
+                    {currentUser.steam_id && currentUser?.steam_profile &&
+                    <Button
                         aria-label='account of current user'
                         aria-controls='menu-appbar'
                         aria-haspopup='true'
                         onClick={handleUserMenu}
-                        color='inherit'
+                        className={classes.buttons}
                     >
-                        <AccountCircle />
-                    </IconButton>
-
+                        <img src={currentUser?.steam_profile.avatar} alt={'avatar'} />
+                    </Button>
+                    }
                     <div className={classes.sectionDesktop}>
-                        {!currentUser.player ||
-                        (currentUser?.player.steam_id === '' && (
+                        {currentUser.steam_id == '' &&
                             <Button onClick={handleOnLogin}>
                                 <img
                                     src={SteamLogo}
                                     alt={'Steam Login'}
                                 />
                             </Button>
-                        ))}
-                        <Menu
-                            id='menu-appbar'
-                            anchorEl={anchorEl}
-                            anchorOrigin={{
-                                vertical: 'top',
-                                horizontal: 'right'
-                            }}
-                            keepMounted
-                            transformOrigin={{
-                                vertical: 'top',
-                                horizontal: 'right'
-                            }}
-                            open={open}
-                            onClose={handleUserMenuClose}
-                        >
-                            <MenuItem onClick={handleUserMenuClose}>Profile</MenuItem>
-                            <MenuItem onClick={handleUserMenuClose}>My account</MenuItem>
-                        </Menu>
+                        }
+                        {currentUser.steam_id !== '' && (
+                            <Menu
+                                id='menu-appbar'
+                                anchorEl={anchorEl}
+                                anchorOrigin={{
+                                    vertical: 'top',
+                                    horizontal: 'right'
+                                }}
+                                keepMounted
+                                transformOrigin={{
+                                    vertical: 'top',
+                                    horizontal: 'right'
+                                }}
+                                open={open}
+                                onClose={handleUserMenuClose}
+                                title={currentUser?.steam_profile?.personaname || 'Guest'}
+                            >
+                                {renderLinkedMenuItem('Profile', '/profile', <AccountCircleIcon />)}
+                                {renderLinkedMenuItem('Logout', '/logout', <ExitToAppIcon />)}
+                            </Menu>)}
                     </div>
                     <div className={classes.sectionMobile}>
                         <IconButton
@@ -299,7 +303,7 @@ const TopBarWithRouter = withRouter(TopBar);
 
 export const Header = () => {
     return (
-        <Paper style={{marginBottom:"2rem"}}>
+        <Paper style={{ marginBottom: '2rem' }}>
             <Grid container>
                 <Grid item md={12}>
                     <TopBarWithRouter />

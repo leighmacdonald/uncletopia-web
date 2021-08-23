@@ -23,10 +23,10 @@ serve:
 js_deps: yarn_install
 
 build: clean fmt vet
-	@CGO_ENABLED=0 go build -o uncledane-web
+	@CGO_ENABLED=0 go build -o uncletopia-web
 
 run: build
-	@./uncledane-web
+	@./uncletopia-web
 
 test:
 	@CGO_ENABLED=0 go test -race -cover . ./...
@@ -45,8 +45,8 @@ clean:
 	@rm -rf ./frontend/dist
 
 run_image: image
-	@docker run --rm -p 8003:8003 -v "$(pwd)/config.yaml:/app/config.yaml" leighmacdonald/uncledane-web:latest
+	@docker run --rm -p 8004:8004 -v "$(pwd)/config.yaml:/app/config.yaml" leighmacdonald/uncletopia-web:latest
 
 image:
-	@docker build -t leighmacdonald/uncledane-web:latest .
+	@docker build -t leighmacdonald/uncletopia-web:latest .
 

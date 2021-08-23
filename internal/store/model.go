@@ -1,10 +1,10 @@
 package store
 
 import (
+	"fmt"
 	"github.com/leighmacdonald/steamid/v2/extra"
 	"github.com/leighmacdonald/steamid/v2/steamid"
 	"github.com/leighmacdonald/steamweb"
-	"net"
 	"time"
 )
 
@@ -17,6 +17,32 @@ const (
 	PModerator     Privilege = 50
 	PAdmin         Privilege = 100
 )
+
+type PatreonAuth struct {
+	SteamID      steamid.SID64 `json:"steam_id,int64"`
+	AccessToken  string        `json:"access_token"`
+	RefreshToken string        `json:"refresh_token"`
+	ExpiresIn    int           `json:"expires_in"`
+	Scope        string        `json:"scope"`
+	TokenType    string        `json:"token_type"`
+	CreatedOn    time.Time     `json:"-"`
+	UpdatedOn    time.Time     `json:"-"`
+}
+
+func NewPatreonAuth(sid steamid.SID64) PatreonAuth {
+	return PatreonAuth{SteamID: sid, CreatedOn: time.Now(), UpdatedOn: time.Now()}
+}
+
+type News struct {
+	NewsID    int           `json:"news_id"`
+	SteamID   steamid.SID64 `json:"steam_id,int64"`
+	Title     string        `json:"title"`
+	BodyMD    string        `json:"body_md"`
+	BodyHTML  string        `json:"body_html"`
+	CreatedOn time.Time     `json:"created_on"`
+	UpdatedOn time.Time     `json:"updated_on"`
+	PublishOn time.Time     `json:"publish_on"`
+}
 
 type Donation struct {
 }
@@ -58,21 +84,18 @@ type Server struct {
 	State          *extra.Status `json:"state"`
 }
 
+func (s Server) Addr() string {
+	return fmt.Sprintf("%s:%d", s.Host, s.Port)
+}
+
 type Person struct {
-	SteamID          steamid.SID64 `db:"steam_id" json:"steam_id"`
-	Name             string        `db:"name" json:"name"`
-	CreatedOn        time.Time     `db:"created_on" json:"created_on"`
-	UpdatedOn        time.Time     `db:"updated_on" json:"updated_on"`
-	PermissionLevel  Privilege     `db:"permission_level" json:"permission_level"`
-	IsNew            bool          `db:"-" json:"-"`
-	DiscordID        string        `db:"discord_id" json:"discord_id"`
-	IPAddr           net.IP        `db:"ip_addr" json:"ip_addr"`
-	CommunityBanned  bool
-	VACBans          int
-	GameBans         int
-	EconomyBan       string
-	DaysSinceLastBan int
-	*steamweb.PlayerSummary
+	SteamID         steamid.SID64           `json:"steam_id"`
+	PatreonUserID   string                  `json:"patreon_user_id"`
+	CreatedOn       time.Time               `json:"created_on"`
+	UpdatedOn       time.Time               `json:"updated_on"`
+	LastLogin       time.Time               `json:"last_login"`
+	PermissionLevel Privilege               `json:"permission_level"`
+	SteamProfile    *steamweb.PlayerSummary `json:"steam_profile"`
 }
 
 // LoggedIn checks for a valid steamID
@@ -84,10 +107,9 @@ func (p *Person) LoggedIn() bool {
 func NewPerson(sid64 steamid.SID64) *Person {
 	return &Person{
 		SteamID:         sid64,
-		IsNew:           true,
 		CreatedOn:       time.Now(),
 		UpdatedOn:       time.Now(),
-		PlayerSummary:   &steamweb.PlayerSummary{},
+		SteamProfile:    &steamweb.PlayerSummary{},
 		PermissionLevel: PAuthenticated,
 	}
 }

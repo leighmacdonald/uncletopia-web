@@ -2,10 +2,12 @@ package config
 
 import (
 	"fmt"
+	"github.com/leighmacdonald/steamweb"
 	"github.com/mitchellh/go-homedir"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"log"
 	"os"
+	"strings"
 )
 
 var (
@@ -35,7 +37,7 @@ type HTTPConfig struct {
 }
 
 type SteamConfig struct {
-	key string `mapstructure:"key"`
+	Key string `mapstructure:"Key"`
 }
 
 type PatreonConfig struct {
@@ -44,6 +46,7 @@ type PatreonConfig struct {
 	AccessToken  string `mapstructure:"access_token"`
 	RefreshToken string `mapstructure:"refresh_token"`
 }
+
 type DatabaseConfig struct {
 	DSN        string `mapstructure:"dsn"`
 	LogQueries bool   `mapstructure:"log_queries"`
@@ -67,7 +70,9 @@ func Read() {
 		viper.AddConfigPath("../..")
 		viper.AddConfigPath(home)
 		viper.AddConfigPath(".")
+		viper.SetEnvPrefix("ut")
 		viper.SetConfigName("config")
+		viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
@@ -87,4 +92,7 @@ func Read() {
 	Steam = Full.Steam
 	HTTP = Full.HTTP
 	Database = Full.Database
+	if err := steamweb.SetKey(Steam.Key); err != nil {
+		log.Errorf("Failed to set steam api Key: %v", err)
+	}
 }

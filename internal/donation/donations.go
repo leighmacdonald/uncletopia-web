@@ -1,13 +1,14 @@
-package web
+package donation
 
 import (
 	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/leighmacdonald/uncletopia-web/internal/config"
-	"github.com/pkg/errors"
+	"github.com/leighmacdonald/uncletopia-web/internal/store"
 	"golang.org/x/oauth2"
 	"gopkg.in/mxpv/patreon-go.v1"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -19,7 +20,7 @@ func onPatreonWebhook(c *gin.Context) {
 	}
 }
 
-func NewPatreonClient() (*patreon.Client, error) {
+func NewPatreonClient(pa *store.PatreonAuth) (*patreon.Client, error) {
 	cfg := oauth2.Config{
 		ClientID:     config.Patreon.ClientID,
 		ClientSecret: config.Patreon.ClientSecret,
@@ -27,19 +28,21 @@ func NewPatreonClient() (*patreon.Client, error) {
 			AuthURL:  patreon.AuthorizationURL,
 			TokenURL: patreon.AccessTokenURL,
 		},
-		Scopes: []string{"users", "pledges-to-me", "my-campaign"},
+		Scopes: strings.Split(pa.Scope, " "),
 	}
 	token := oauth2.Token{
-		AccessToken:  config.Patreon.AccessToken,
-		RefreshToken: config.Patreon.RefreshToken,
+		AccessToken:  pa.AccessToken,
+		RefreshToken: pa.RefreshToken,
 		// Must be non-nil, otherwise token will not be expired
-		Expiry: time.Now().Add(-24 * time.Hour),
+		Expiry: pa.UpdatedOn.Add(time.Duration(pa.ExpiresIn) * time.Second),
 	}
 	client := patreon.NewClient(cfg.Client(context.Background(), &token))
-	_, err := client.FetchUser()
-	if err != nil {
-		return nil, errors.Wrap(err, "Failed sanity check request")
-	}
-
 	return client, nil
+}
+
+// patreonTokenRefresh
+//
+// Tokens are valid for up to one month after they are issued.
+func patreonTokenRefresh() {
+
 }

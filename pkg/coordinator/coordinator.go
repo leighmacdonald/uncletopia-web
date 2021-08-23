@@ -29,15 +29,45 @@ import (
 	"context"
 	"github.com/leighmacdonald/steamid/v2/steamid"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 	"sync"
 	"time"
 )
 
 type onQueueFn func(*Client) error
 
+type ClientCollection []*Client
+
+func (col *ClientCollection) remove(c *Client) bool {
+	var newCol ClientCollection
+	removed := false
+	for _, client := range *col {
+		if client == c {
+			removed = true
+			continue
+		}
+		newCol = append(newCol, client)
+	}
+	*col = newCol
+	return removed
+}
+
+func (col *ClientCollection) add(c *Client) {
+	*col = append(*col, c)
+}
+
+func (col *ClientCollection) exists(c *Client) bool {
+	for _, client := range *col {
+		if client == c {
+			return true
+		}
+	}
+	return false
+}
+
 type Coordinator struct {
 	// Clients waiting in  FIFO queue
-	clients []*Client
+	clients ClientCollection
 	// How long a client is given to connect to a server once initiating the queue connection trigger
 	// They will be dropped and the next client takes their position
 	connectionTimeAllowance time.Duration
@@ -50,11 +80,24 @@ func (c *Coordinator) registerOnQueueReady(fn onQueueFn) {
 }
 
 func (c *Coordinator) start(ctx context.Context) {
-	clientTimeoutTicker := time.NewTicker(time.Second)
+	queueUpdateTicker := time.NewTicker(time.Second)
 	for {
 		select {
-		case <-clientTimeoutTicker.C:
+		case <-queueUpdateTicker.C:
+			c.clientsMu.Lock()
+			var expiredClients []*Client
+			for _, client := range c.clients {
+				if client.expired() {
+					log.WithFields(log.Fields{"sid": client.sid, "addr": client.ipAddr}).
+						Warnf("Client queue expired")
+					expiredClients = append(expiredClients, client)
+				}
+			}
+			for _, exC := range expiredClients {
+				c.clients.remove(exC)
+			}
 
+			c.clientsMu.Unlock()
 		case <-ctx.Done():
 			// Send disconnects to existing queue?
 			return
@@ -62,8 +105,10 @@ func (c *Coordinator) start(ctx context.Context) {
 	}
 }
 
-func (c *Coordinator) HandleNewConnection() {
-
+func (c *Coordinator) queueSize() int {
+	c.clientsMu.RLock()
+	defer c.clientsMu.RUnlock()
+	return len(c.clients)
 }
 
 func (c *Coordinator) IsQueued(sid steamid.SID64) bool {
@@ -81,24 +126,39 @@ func (c *Coordinator) Queue(client *Client) error {
 	if c.IsQueued(client.sid) {
 		return errors.New("duplicate")
 	}
-	c.clients = append(c.clients, client)
+	c.clientsMu.Lock()
+	c.clients.add(client)
+	c.clientsMu.Unlock()
+	cLog(client).Infof("Client queued successfully")
 	return nil
 }
 
-func New() Coordinator {
-	return Coordinator{
+func cLog(c *Client) *log.Entry {
+	return log.WithFields(log.Fields{"sid": c.sid, "addr": c.ipAddr})
+}
+
+func (c *Coordinator) ClientConnected(client *Client) {
+	// Client connected to the server. Remove them from the active queue
+	c.clients.remove(client)
+	cLog(client).Infof("Client connected successfully")
+}
+
+func (c *Coordinator) ClientDisconnected(client *Client) {
+	// Client disconnected, slot opened.
+	// Check for open servers matching the players options
+	//
+	cLog(client).Infof("Client disconnected from server")
+}
+
+func New() *Coordinator {
+	return &Coordinator{
 		clients:                 nil,
 		connectionTimeAllowance: 60 * time.Second,
 		clientsMu:               &sync.RWMutex{},
 	}
 }
 
-type Client struct {
-	// First queued
-	started time.Time
-	// Last ping/keep-alive
-	update time.Time
-	sid    steamid.SID64
+type Filters struct {
 	// "pl only", "24/7 2fort", etc.
 	gameTypes []string
 	regions   []string
@@ -109,10 +169,26 @@ type Client struct {
 	maxDistance float64
 }
 
-func NewClient(sid steamid.SID64) *Client {
+type Client struct {
+	// First queued
+	started time.Time
+	// Last ping/keep-alive
+	update  time.Time
+	sid     steamid.SID64
+	ipAddr  string
+	filters *Filters
+}
+
+func (client Client) expired() bool {
+	return time.Since(client.update) > time.Second*30
+}
+
+func NewClient(sid steamid.SID64, ipaddr string, filters *Filters) *Client {
 	return &Client{
 		started: time.Now(),
 		update:  time.Now(),
 		sid:     sid,
+		ipAddr:  ipaddr,
+		filters: filters,
 	}
 }

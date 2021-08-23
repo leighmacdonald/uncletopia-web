@@ -16,10 +16,14 @@ import { CurrentUserCtx, GuestProfile } from '../ctx/CurrentUserCtx';
 import { UserFlashCtx } from '../ctx/UserFlashCtx';
 import { Flash, Flashes } from './Flashes';
 import { LoginSuccess } from './LoginSuccess';
-import { getCurrentProfile, PlayerProfile } from '../api';
+import { getCurrentProfile, Person } from '../api';
+import { UserProfile } from './Profile';
+import { Logout } from './Logout';
+import { Maps } from './Maps';
+import { Rules } from './Rules';
 
 export const App = () => {
-    const [currentUser, setCurrentUser] = useState<NonNullable<PlayerProfile>>(GuestProfile);
+    const [currentUser, setCurrentUser] = useState<NonNullable<Person>>(GuestProfile);
     const [flashes, setFlashes] = useState<Flash[]>([]);
 
     useEffect(() => {
@@ -27,42 +31,50 @@ export const App = () => {
             const token = localStorage.getItem('token');
             if (token != null && token != '') {
                 const profile =
-                    (await getCurrentProfile()) as NonNullable<PlayerProfile>;
+                    (await getCurrentProfile()) as NonNullable<Person>;
                 setCurrentUser(profile);
-                alert("yippie")
             }
         };
         // noinspection JSIgnoredPromiseFromCall
         fetchProfile();
-    }, [setCurrentUser]);
+    }, []);
 
     return (
         <CurrentUserCtx.Provider value={{ currentUser, setCurrentUser }}>
             <Router>
                 <React.Fragment>
                     <ThemeProvider theme={tf2theme}>
-                        <CssBaseline />
-                        <Header />
-                        <UserFlashCtx.Provider value={{ flashes, setFlashes }}>
-                            <Flashes flashes={flashes} />
-                        </UserFlashCtx.Provider>
-                        <Container maxWidth='lg'>
-                            <Switch>
-                                <Route exact path='/' component={Home} />
-                                <Route exact path='/servers' component={Servers} />
-                                <Route exact path='/donate' component={Donate} />
-
-                                <Route
-                                    exact
-                                    path={'/login/success'}
-                                    component={LoginSuccess}
-                                />
-                            </Switch>
-                            <Footer />
+                        <Container>
+                            <CssBaseline />
+                            <Header />
+                            <UserFlashCtx.Provider value={{ flashes, setFlashes }}>
+                                <Flashes flashes={flashes} />
+                            </UserFlashCtx.Provider>
+                            <Container maxWidth='lg'>
+                                <Switch>
+                                    <Route exact path='/' component={Home} />
+                                    <Route exact path='/servers' component={Servers} />
+                                    <Route exact path='/maps' component={Maps} />
+                                    <Route exact path='/rules' component={Rules} />
+                                    <Route exact path='/donate' component={Donate} />
+                                    <Route exact path='/profile' component={UserProfile} />
+                                    <Route
+                                        exact
+                                        path={'/login/success'}
+                                        component={LoginSuccess}
+                                    />
+                                    <Route
+                                        exact
+                                        path={'/logout'}
+                                        component={Logout}
+                                    />
+                                </Switch>
+                                <Footer />
+                            </Container>
                         </Container>
                     </ThemeProvider>
                 </React.Fragment>
             </Router>
         </CurrentUserCtx.Provider>
-    )
+    );
 };

@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"os"
+	"time"
 )
 
 var (
@@ -38,6 +39,7 @@ var seedCmd = &cobra.Command{
 	Long:  `seed data from the seed.json file`,
 	Run: func(cmd *cobra.Command, args []string) {
 		type seedFile struct {
+			News    []store.News   `json:"news"`
 			Servers []store.Server `json:"servers"`
 		}
 		s, err := store.New(config.Database.DSN)
@@ -56,8 +58,16 @@ var seedCmd = &cobra.Command{
 			log.Fatalf("Failed to decode seed file: %v", errDecode)
 		}
 		for _, server := range seedData.Servers {
-			if errAdd := s.ServerAdd(context.Background(), &server); err != nil {
+			if errAdd := s.ServerSave(context.Background(), &server); err != nil {
 				log.Fatalf("Error adding seed server (%s): %v", server.NameShort, errAdd)
+			}
+		}
+		for _, n := range seedData.News {
+			n.CreatedOn = time.Now()
+			n.UpdatedOn = time.Now()
+			n.PublishOn = time.Now()
+			if err := s.NewsSave(context.Background(), &n); err != nil {
+				log.Errorf("Failed to save news: %v", err)
 			}
 		}
 		log.Infof("Added server: %d", len(seedData.Servers))
@@ -75,5 +85,6 @@ func init() {
 	cobra.OnInitialize(config.Read)
 
 	rootCmd.AddCommand(seedCmd)
+
 	seedCmd.PersistentFlags().StringVarP(&seedFilePath, "seed", "s", "seed.json", "Database seed file location")
 }
