@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import { noop } from 'lodash-es';
+import noop from 'lodash-es/noop';
 import { LatLngLiteral } from 'leaflet';
 import { Server } from '../api';
 

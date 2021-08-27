@@ -1,13 +1,12 @@
 import React from 'react';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
+import Paper from '@material-ui/core/Paper';
+import createStyles from '@material-ui/styles/createStyles/createStyles';
+import makeStyles from '@material-ui/styles/makeStyles/makeStyles';
 import { Person } from '../api';
-import {
-    createStyles, Paper,
-    Theme
-} from '@material-ui/core';
 import { useCurrentUserCtx } from '../ctx/CurrentUserCtx';
-import { makeStyles } from '@material-ui/core/styles';
+import { Theme } from '@material-ui/core';
 
 export interface Donation {
     player: Person;

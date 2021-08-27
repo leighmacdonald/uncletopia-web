@@ -1,10 +1,11 @@
 // import useWebSocket, { ReadyState } from 'react-use-websocket';
-import Typography from '@material-ui/core/Typography';
-import Grid from '@material-ui/core/Grid';
 import React from 'react';
-import Paper from '@material-ui/core/Paper/Paper';
-import { makeStyles } from '@material-ui/core/styles';
-import { Button } from '@material-ui/core';
+import Button from '@material-ui/core/Button';
+import Grid from '@material-ui/core/Grid';
+import Paper from '@material-ui/core/Paper';
+import Typography from '@material-ui/core/Typography';
+import makeStyles from '@material-ui/core/styles/makeStyles';
+import { useCurrentUserCtx } from '../ctx/CurrentUserCtx';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -13,18 +14,22 @@ const useStyles = makeStyles((theme) => ({
         marginBottom: theme.spacing(2)
     },
     button: {
-        backgroundColor: "rgb(44,91,17)",
+        backgroundColor: 'rgb(44,91,17)',
         width: '100%',
         height: '100%',
         '&:hover': {
-            backgroundColor: "rgb(74,154,28)"
+            backgroundColor: 'rgb(74,154,28)'
         }
-    },
-}))
+    }
+}));
 
 export const ServerQueue = () => {
     const classes = useStyles();
+    const { currentUser } = useCurrentUserCtx();
     // const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket();
+    if (!["76561198084134025", "76561198057999536"].includes(currentUser.steam_id)) {
+        return <></>;
+    }
     return <Paper className={classes.root}>
         <Grid container>
             <Grid item xs={10}>

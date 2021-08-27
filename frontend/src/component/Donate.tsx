@@ -3,18 +3,21 @@ import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import AcUnitIcon from '@material-ui/icons/AcUnit';
 import { fetchServers, Person } from '../api';
-import {
-    Button,
-    createStyles,
-    FormControl, FormHelperText, List, ListItem, ListItemIcon, ListItemText,
-    MenuItem, Paper,
-    Select,
-    Theme
-} from '@material-ui/core';
+import Button from '@material-ui/core/Button';
+import FormControl from '@material-ui/core/FormControl';
+import FormHelperText from '@material-ui/core/FormHelperText';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import MenuItem from '@material-ui/core/MenuItem';
+import Paper from '@material-ui/core/Paper';
+import Select from '@material-ui/core/Select';
+import { createStyles, Theme } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { useCurrentUserCtx } from '../ctx/CurrentUserCtx';
-import { makeStyles } from '@material-ui/core/styles';
-import { sortedUniq } from 'lodash-es';
+import makeStyles from '@material-ui/core/styles/makeStyles';
+import sortedUniq from 'lodash-es/sortedUniq';
 
 export interface Donation {
     player: Person;
@@ -43,10 +46,10 @@ const useStyles = makeStyles((theme: Theme) =>
             flexWrap: 'nowrap',
             align: 'center',
             justifyContent: 'center',
-            backgroundColor: theme.palette.text.secondary,
-            '&:hover': {
-                backgroundColor: theme.palette.text.primary
-            }
+            backgroundColor: theme.palette.background.default
+            // '&:hover': {
+            //     backgroundColor: theme.palette.text.primary
+            // }
         },
         tierRow: {
             marginBottom: theme.spacing(6),
@@ -62,10 +65,13 @@ const useStyles = makeStyles((theme: Theme) =>
             padding: theme.spacing(3)
         },
         donation_selector: {
+            marginTop: theme.spacing(2),
             marginBottom: theme.spacing(6),
-            padding: theme.spacing(2)
+            padding: theme.spacing(3)
         },
         donation_body: {
+            padding: theme.spacing(3),
+            textAlign: 'justify',
             marginTop: theme.spacing(2),
             marginBottom: theme.spacing(2),
             fontFamily: [
@@ -112,7 +118,7 @@ export const DonationPanel = () => {
     return <Paper className={classes.donation_selector}>
         <Grid container className={classes.rowBody} spacing={6}>
             <Grid item xs={6}>
-                <Typography variant={'h3'} color={'primary'}>Donate ❤️</Typography>
+                <Typography variant={'h3'} color={'secondary'}>Donate ❤️</Typography>
             </Grid>
             <Grid item xs={6}>
                 <Grid container className={classes.rowBody} spacing={3}>
@@ -139,9 +145,10 @@ export const DonationPanel = () => {
                             </FormControl>
                         </Grid>
                         <Grid item xs>
-                            <Button className={classes.button} component={Link} to={{ pathname: link }}
+                            <Button className={classes.button} component={Link} color={'secondary'}
+                                    to={{ pathname: link }}
                                     target={'_parent'}
-                                    color={'default'}>Link your
+                            >Link your
                                 Patreon
                                 account</Button>
                         </Grid>
@@ -173,15 +180,15 @@ export const DonationTier = ({ tier }: DonationTierProps) => {
         <Paper>
             <Grid container className={classes.donation_container}>
                 <Grid item xs={12}>
-                    <Typography variant={'h3'} style={{marginBottom: "1rem"}}>{tier.title}</Typography>
-                    <Typography variant={'h6'} style={{marginBottom: "1rem"}}>{tier.sub_title}</Typography>
-                    <img src={tier.img} style={{width:"100%"}} />
+                    <Typography variant={'h3'} style={{ marginBottom: '1rem' }}>{tier.title}</Typography>
+                    <Typography variant={'h6'} style={{ marginBottom: '1rem' }}>{tier.sub_title}</Typography>
+                    <img src={tier.img} style={{ width: '100%' }} />
                     <Typography variant={'body2'} className={classes.donation_body}>{tier.body}</Typography>
-                    <List component="nav" aria-label="main mailbox folders">
+                    <List component='nav' aria-label='main mailbox folders'>
                         {tier.benefits.map(value =>
                             <ListItem>
                                 <ListItemIcon>
-                                    <AcUnitIcon />
+                                    <AcUnitIcon color={'secondary'}/>
                                 </ListItemIcon>
                                 <ListItemText primary={value} />
                             </ListItem>
@@ -189,7 +196,7 @@ export const DonationTier = ({ tier }: DonationTierProps) => {
 
                     </List>
                     <Button className={classes.button} onClick={() => {
-                        window.location.replace(tier.url)
+                        window.location.replace(tier.url);
                     }}>{tier.price}</Button>
                 </Grid>
             </Grid>
@@ -230,9 +237,7 @@ export const Donate = () => {
         }
     ];
     return <>
-
         <DonationPanel />
-
 
         <Grid container spacing={3} className={classes.tierRow}>
             {tiers.map(tier => <Grid item lg={4} sm={12} md={6} key={tier.title}><DonationTier tier={tier} /></Grid>)}

@@ -1,9 +1,16 @@
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
-import { FormControl, FormControlLabel, InputLabel, MenuItem, Paper, Select, Slider, Switch } from '@material-ui/core';
+import FormControl from '@material-ui/core/FormControl';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import InputLabel from '@material-ui/core/InputLabel';
+import MenuItem from '@material-ui/core/MenuItem';
+import Paper from '@material-ui/core/Paper';
+import Select from '@material-ui/core/Select';
+import Slider from '@material-ui/core/Slider';
+import Switch from '@material-ui/core/Switch';
 import React, { useEffect, useState } from 'react';
-import { makeStyles } from '@material-ui/core/styles';
-import { uniq } from 'lodash-es';
+import makeStyles from '@material-ui/core/styles/makeStyles';
+import uniq from 'lodash-es/uniq';
 import { useMapStateCtx } from '../ctx/MapStateCtx';
 import { getDistance } from '../geo';
 
@@ -27,7 +34,7 @@ const useStyles = makeStyles((theme) => ({
 
 export const ServerFilters = () => {
     const classes = useStyles();
-    const { setCustomRange, servers, customRange, pos, setSelectedServers, setFilterByRegion } = useMapStateCtx();
+    const { setCustomRange, servers, customRange, pos, setSelectedServers, setFilterByRegion, setServers } = useMapStateCtx();
     const [showOpenOnly, setShowOpenOnly] = useState<boolean>(false);
     const [selectedRegion, setSelectedRegions] = useState<string[]>(['any']);
     const [regionsToggleEnabled, setRegionsToggleEnabled] = useState<boolean>(false);
@@ -45,7 +52,7 @@ export const ServerFilters = () => {
 
     const onRegionsToggleEnabledChanged = (_event: any, checked: boolean) => {
         setRegionsToggleEnabled(checked);
-        setFilterByRegion(!checked)
+        setFilterByRegion(!checked);
     };
 
     useEffect(() => {
@@ -54,7 +61,7 @@ export const ServerFilters = () => {
             s = s.filter(srv => selectedRegion.includes(srv.region));
         }
         if (showOpenOnly) {
-            s = s.filter(srv => (srv?.a2s?.Players || 0) === (srv?.a2s?.MaxPlayers || 32));
+            s = s.filter(srv => (srv?.a2s?.Players || 0) < (srv?.a2s?.MaxPlayers || 32));
         }
         if (regionsToggleEnabled && customRange) {
             s = s.filter(srv =>
@@ -62,7 +69,7 @@ export const ServerFilters = () => {
             );
         }
         setSelectedServers(s);
-    }, [selectedRegion, showOpenOnly, regionsToggleEnabled, customRange]);
+    }, [selectedRegion, showOpenOnly, regionsToggleEnabled, customRange, setServers]);
 
     const marks = [
         {

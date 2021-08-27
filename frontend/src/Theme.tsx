@@ -1,4 +1,4 @@
-import {createTheme} from "@material-ui/core";
+import createTheme from "@material-ui/core/styles/createTheme";
 
 export const tf2theme = createTheme({
     typography: {
@@ -10,12 +10,12 @@ export const tf2theme = createTheme({
             'Arial',
             'sans-serif'
         ].join(','),
-        h1: {textAlign: "center", fontSize: 48, marginBottom: 12},
-        h2: {textAlign: "center", fontSize: 36, marginBottom: 12},
-        h3: {textAlign: "center"},
-        h4: {textAlign: "center"},
-        h5: {textAlign: "center"},
-        h6: {textAlign: "center"},
+        h1: {textAlign: "center", fontSize: 48, marginBottom: 12, color: '#fde1c7'},
+        h2: {textAlign: "center", fontSize: 36, marginBottom: 12, color: '#fde1c7'},
+        h3: {textAlign: "center", color: '#fde1c7'},
+        h4: {textAlign: "center", color: '#fde1c7'},
+        h5: {textAlign: "center", color: '#fde1c7'},
+        h6: {textAlign: "center", color: '#fde1c7'},
         body1: {
             fontFamily: [
                 '"Helvetica Neue"',
@@ -41,8 +41,8 @@ export const tf2theme = createTheme({
             main: "rgb(252, 198, 149)",
         },
         text: {
-            primary: "rgb(255, 252, 249)",
-            secondary: "rgb(252, 198, 149)",
+            primary: "rgb(252, 198, 149)",
+            secondary: "rgb(255,187,126)",
         },
     },
 })

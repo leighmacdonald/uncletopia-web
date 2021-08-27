@@ -1,8 +1,8 @@
+import React from 'react';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
-import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
-import { Paper } from '@material-ui/core';
+import Paper from '@material-ui/core/Paper';
+import makeStyles from '@material-ui/core/styles/makeStyles';
 
 const useStyles = makeStyles((_theme) => ({
     title: {
@@ -36,9 +36,8 @@ export const Rules = () => {
     return <>
         <Grid container spacing={3}>
             <Grid item xs={12}>
-                <Typography variant={'h1'}>Current Server Rules & Configuration</Typography>
                 {rules.map((r, i) => <Paper key={i} style={{  marginBottom: "20px", padding: "1rem"}}>
-                    <Typography className={classes.title} variant={'subtitle1'}>{r[0]}</Typography>
+                    <Typography className={classes.title} variant={'h6'}>{r[0]}</Typography>
                     <Typography className={classes.body} variant={'body1'}>{r[1]}</Typography>
                 </Paper>)}
             </Grid>

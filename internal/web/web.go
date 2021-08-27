@@ -61,12 +61,12 @@ func responseOK(c *gin.Context, status int, data interface{}) {
 	})
 }
 
-func currentPerson(c *gin.Context) *store.Person {
+func currentPerson(c *gin.Context) store.Person {
 	p, found := c.Get("person")
 	if !found {
 		return store.NewPerson(0)
 	}
-	person, ok := p.(*store.Person)
+	person, ok := p.(store.Person)
 	if !ok {
 		log.Warnf("Total not cast store.Person from session")
 		return store.NewPerson(0)
@@ -185,14 +185,17 @@ func New(db store.StorageInterface, coord *coordinator.Coordinator) (http.Handle
 		staticPath = "frontend/dist/static"
 	}
 	idxPath := path.Join(staticPath, "index.html")
-	idx, err := os.ReadFile(idxPath)
-	if err != nil {
-		return nil, errors.Wrapf(err, "Could not read %s", idxPath)
-	}
+
 	r.Static("/static", staticPath)
 	for _, p := range []string{"/", "/settings", "/credits", "/donate", "/servers", "/login/success",
 		"/profile", "/maps", "/rules", "/404"} {
 		r.GET(p, func(c *gin.Context) {
+			idx, err := os.ReadFile(idxPath)
+			if err != nil {
+				c.AbortWithStatus(http.StatusInternalServerError)
+				log.Errorf("Failed to load index.html")
+				return
+			}
 			c.Data(200, "text/html", idx)
 		})
 	}
@@ -200,6 +203,9 @@ func New(db store.StorageInterface, coord *coordinator.Coordinator) (http.Handle
 	r.POST("/coordinator/disconnect", onCoordinatorDisconnect(coord))
 	r.GET("/api/servers", onApiServers(db))
 	r.GET("/api/news", onApiNews(db))
+	r.GET("/discord", func(c *gin.Context) {
+		c.Redirect(http.StatusTemporaryRedirect, "https://discord.gg/caQKCWFMrN")
+	})
 	r.GET("/auth/callback", onOpenIDCallback(db))
 	r.GET("/patreon/callback", onPatreonCallback(db))
 	r.GET("/embed", func(c *gin.Context) {
@@ -342,7 +348,7 @@ func onOpenIDCallback(db store.StorageInterface) gin.HandlerFunc {
 		}
 		person.SteamProfile = &summaries[0]
 
-		if errSave := db.PersonSave(c, person); errSave != nil {
+		if errSave := db.PersonSave(c, &person); errSave != nil {
 			log.Printf("Error saving person: %q\n", errSave)
 			c.Redirect(302, ref)
 			return
@@ -553,15 +559,15 @@ func onPatreonCallback(db store.StorageInterface) gin.HandlerFunc {
 		form.Set("grant_type", "authorization_code")
 		form.Set("client_id", config.Patreon.ClientID)
 		form.Set("client_secret", config.Patreon.ClientSecret)
-		form.Set("redirect_uri", "https://ut.roto.su/patreon/callback")
+		form.Set("redirect_uri", fmt.Sprintf("https://%s/patreon/callback", config.HTTP.Domain))
 
-		req, err := http.NewRequestWithContext(ctx, "POST",
+		req, errNR := http.NewRequestWithContext(ctx, "POST",
 			"https://www.patreon.com/api/oauth2/token",
 			strings.NewReader(form.Encode()))
 		req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-		if err != nil {
-			log.WithError(err).Errorf("Failed to create patreon request")
+		if errNR != nil {
+			log.WithError(errNR).Errorf("Failed to create patreon request")
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
@@ -602,7 +608,7 @@ func onPatreonCallback(db store.StorageInterface) gin.HandlerFunc {
 			return
 		}
 		person.PatreonUserID = u.Data.ID
-		if errUs := db.PersonSave(c, person); errUs != nil {
+		if errUs := db.PersonSave(c, &person); errUs != nil {
 			log.WithError(errPc).Errorf("Failed to save patreon user id: %s", errUs)
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return

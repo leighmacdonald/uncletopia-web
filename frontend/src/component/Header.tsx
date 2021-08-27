@@ -1,27 +1,27 @@
-import Grid from '@material-ui/core/Grid';
-import {
-    Paper,
-    Toolbar,
-    AppBar,
-    IconButton,
-    Menu,
-    MenuItem,
-    Button, ListItemIcon, ListItemText, Badge
-} from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
+import { Grid } from '@material-ui/core';
+import Paper from '@material-ui/core/Paper';
+import Toolbar from '@material-ui/core/Toolbar';
+import AppBar from '@material-ui/core/AppBar';
+import IconButton from '@material-ui/core/IconButton';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
+import Button from '@material-ui/core/Button';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import Badge from '@material-ui/core/Badge';
+import Divider from '@material-ui/core/Divider';
+import Typography from '@material-ui/core/Typography';
+import makeStyles from '@material-ui/core/styles/makeStyles';
 import React, { forwardRef, useMemo, useState } from 'react';
 import NotificationsIcon from '@material-ui/icons/Notifications';
-import { AccountCircle } from '@material-ui/icons';
-import { RouteComponentProps, Link, withRouter } from 'react-router-dom';
-import Divider from '@material-ui/core/Divider';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import SettingsIcon from '@material-ui/icons/Settings';
+import MoreIcon from '@material-ui/icons/More';
+import { RouteComponentProps, Link, withRouter } from 'react-router-dom';
 import { useCurrentUserCtx } from '../ctx/CurrentUserCtx';
-import MoreIcon from '@material-ui/icons/MoreVert';
 // @ts-ignore
 import SteamLogo from '../images/steam_login_sm.png';
-import Typography from '@material-ui/core/Typography';
 
 export interface HeaderLink {
     title: string;
@@ -34,7 +34,8 @@ const links: HeaderLink[] = [
     { title: 'Servers', url: '/servers' },
     { title: 'Maps', url: '/maps' },
     { title: 'Rules', url: '/rules' },
-    { title: 'Donate', url: '/donate' }
+    { title: 'Donate', url: '/donate' },
+    { title: 'Discord', url: '/discord' }
 ];
 
 const useStyles = makeStyles((theme) => ({
@@ -66,6 +67,7 @@ const useStyles = makeStyles((theme) => ({
         color: '#fde1c7'
     }
 }));
+
 
 export const handleOnLogin = (): void => {
     const r = `${window.location.protocol}//${window.location.hostname}/auth/callback?return_url=${window.location.pathname}`;
@@ -189,6 +191,7 @@ const TopBar = ({ history }: RouteComponentProps): JSX.Element => {
         >
             {renderLinkedMenuItem('Profile', '/profile', <AccountCircleIcon />)}
             {renderLinkedMenuItem('Settings', '/settings', <SettingsIcon />)}
+
             <Divider light />
             {renderLinkedMenuItem('Logout', '/logout', <ExitToAppIcon />)}
         </Menu>
@@ -223,7 +226,7 @@ const TopBar = ({ history }: RouteComponentProps): JSX.Element => {
                     aria-haspopup='true'
                     color='inherit'
                 >
-                    <AccountCircle />
+                    <AccountCircleIcon />
                 </IconButton>
                 <p>Profile</p>
             </MenuItem>
@@ -252,12 +255,12 @@ const TopBar = ({ history }: RouteComponentProps): JSX.Element => {
                     }
                     <div className={classes.sectionDesktop}>
                         {currentUser.steam_id == '' &&
-                            <Button onClick={handleOnLogin}>
-                                <img
-                                    src={SteamLogo}
-                                    alt={'Steam Login'}
-                                />
-                            </Button>
+                        <Button onClick={handleOnLogin}>
+                            <img
+                                src={SteamLogo}
+                                alt={'Steam Login'}
+                            />
+                        </Button>
                         }
                         {currentUser.steam_id !== '' && (
                             <Menu
@@ -276,8 +279,8 @@ const TopBar = ({ history }: RouteComponentProps): JSX.Element => {
                                 onClose={handleUserMenuClose}
                                 title={currentUser?.steam_profile?.personaname || 'Guest'}
                             >
-                                {renderLinkedMenuItem('Profile', '/profile', <AccountCircleIcon />)}
-                                {renderLinkedMenuItem('Logout', '/logout', <ExitToAppIcon />)}
+                                {renderLinkedMenuItem('Profile', '/profile', <AccountCircleIcon color={'secondary'}/>)}
+                                {renderLinkedMenuItem('Logout', '/logout', <ExitToAppIcon color={'secondary'}/>)}
                             </Menu>)}
                     </div>
                     <div className={classes.sectionMobile}>

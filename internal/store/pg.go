@@ -150,7 +150,7 @@ func (s pgStore) PatreonAuth(ctx context.Context, sid *steamid.SID64) (*PatreonA
 	return &pa, nil
 }
 
-func (s pgStore) Person(ctx context.Context, sid steamid.SID64) (*Person, error) {
+func (s pgStore) Person(ctx context.Context, sid steamid.SID64) (Person, error) {
 	const q = `
 		SELECT 
 		    p.steam_id, p.patreon_user_id, p.permission_level, p.last_login, p.created_on, p.updated_on,
@@ -167,7 +167,7 @@ func (s pgStore) Person(ctx context.Context, sid steamid.SID64) (*Person, error)
 		&p.SteamProfile.Avatar, &p.SteamProfile.AvatarMedium, &p.SteamProfile.AvatarFull, &p.SteamProfile.AvatarHash,
 		&p.SteamProfile.PersonaState, &p.SteamProfile.RealName, &p.SteamProfile.TimeCreated, &p.SteamProfile.LocCountryCode,
 		&p.SteamProfile.LocStateCode, &p.SteamProfile.LocCityID); err != nil {
-		return nil, dbErr(err)
+		return Person{}, dbErr(err)
 	}
 	return p, nil
 }

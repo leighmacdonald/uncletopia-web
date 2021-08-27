@@ -9,7 +9,7 @@ COPY . .
 RUN make
 
 FROM node:16-alpine AS ui
-RUN apk add build-base autoconf automake pngquant bash
+RUN apk add build-base autoconf automake pngquant bash python3
 WORKDIR /build
 COPY frontend/yarn.lock .
 COPY frontend/package.json .

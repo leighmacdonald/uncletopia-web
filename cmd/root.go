@@ -39,6 +39,7 @@ var seedCmd = &cobra.Command{
 	Long:  `seed data from the seed.json file`,
 	Run: func(cmd *cobra.Command, args []string) {
 		type seedFile struct {
+			Person  []store.Person `json:"person"`
 			News    []store.News   `json:"news"`
 			Servers []store.Server `json:"servers"`
 		}
@@ -62,6 +63,14 @@ var seedCmd = &cobra.Command{
 				log.Fatalf("Error adding seed server (%s): %v", server.NameShort, errAdd)
 			}
 		}
+
+		for _, p := range seedData.Person {
+			np := store.NewPerson(p.SteamID)
+			if err := s.PersonSave(context.Background(), &np); err != nil {
+				log.Errorf("Failed to save person: %v", err)
+			}
+		}
+
 		for _, n := range seedData.News {
 			n.CreatedOn = time.Now()
 			n.UpdatedOn = time.Now()

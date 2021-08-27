@@ -104,11 +104,12 @@ func (p *Person) LoggedIn() bool {
 }
 
 // NewPerson allocates a new default person instance
-func NewPerson(sid64 steamid.SID64) *Person {
-	return &Person{
+func NewPerson(sid64 steamid.SID64) Person {
+	return Person{
 		SteamID:         sid64,
 		CreatedOn:       time.Now(),
 		UpdatedOn:       time.Now(),
+		LastLogin:       time.Now(),
 		SteamProfile:    &steamweb.PlayerSummary{},
 		PermissionLevel: PAuthenticated,
 	}

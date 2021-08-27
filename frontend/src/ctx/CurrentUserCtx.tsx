@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 import { communityVisibilityState, PermissionLevel, Person } from '../api';
-import { noop } from 'lodash-es';
+import noop from 'lodash-es/noop';
 
 export const GuestProfile: Person = {
     created_on: '',

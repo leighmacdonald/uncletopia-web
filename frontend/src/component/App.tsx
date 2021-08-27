@@ -1,5 +1,6 @@
 import CssBaseline from '@material-ui/core/CssBaseline';
-import { Container, ThemeProvider } from '@material-ui/core';
+import Container from '@material-ui/core/Container';
+import ThemeProvider from '@material-ui/styles/ThemeProvider';
 import { Header } from './Header';
 import Footer from './Footer';
 import {
@@ -21,6 +22,7 @@ import { UserProfile } from './Profile';
 import { Logout } from './Logout';
 import { Maps } from './Maps';
 import { Rules } from './Rules';
+import { DiscordLink } from './Discord';
 
 export const App = () => {
     const [currentUser, setCurrentUser] = useState<NonNullable<Person>>(GuestProfile);
@@ -57,6 +59,7 @@ export const App = () => {
                                     <Route exact path='/maps' component={Maps} />
                                     <Route exact path='/rules' component={Rules} />
                                     <Route exact path='/donate' component={Donate} />
+                                    <Route exact path='/discord' component={DiscordLink} />
                                     <Route exact path='/profile' component={UserProfile} />
                                     <Route
                                         exact

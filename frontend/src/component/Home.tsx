@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import {parseISO} from 'date-fns'
+import parseISO from 'date-fns/esm/parseISO';
 import { eureka } from '../misc';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
-import { makeStyles } from '@material-ui/core/styles';
-import { Paper } from '@material-ui/core';
+import Paper from '@material-ui/core/Paper';
+import makeStyles from '@material-ui/core/styles/makeStyles';
 import { getNews, News } from '../api';
-import { format } from 'date-fns/esm';
+import format from 'date-fns/esm/format';
 
 interface BlogEntryProps {
     entry: News;
@@ -32,19 +32,19 @@ const useStyles = makeStyles((theme) => ({
 
 export const BlogEntry = ({ entry }: BlogEntryProps) => {
     const classes = useStyles();
-    const d = parseISO(entry.publish_on)
+    const d = parseISO(entry.publish_on);
     return <Paper className={classes.paper}>
         <Grid container>
             <Grid item>
                 <Grid container>
                     <Grid item>
                         <Typography variant={'h2'} color={'primary'}>{entry.title}</Typography>
-                        <Typography variant={'subtitle1'} color={'secondary'}>{format(d, "yyyy-MM-dd")}</Typography>
+                        <Typography variant={'subtitle1'} color={'secondary'}>{format(d, 'yyyy-MM-dd')}</Typography>
                     </Grid>
                 </Grid>
                 <Grid container>
                     <Grid item>
-                        <div className={classes.body1} dangerouslySetInnerHTML={{__html: entry.body_html }}/>
+                        <div className={classes.body1} dangerouslySetInnerHTML={{ __html: entry.body_html }} />
                     </Grid>
                 </Grid>
             </Grid>
@@ -67,7 +67,7 @@ export const Home = () => {
         }, []
     );
 
-    return <Grid container justifyContent={"center"}>
+    return <Grid container justifyContent={'center'}>
         <Grid item xs={8}>
             {(news ?? []).map((e) => {
                 return <BlogEntry entry={e} key={`entry-${e.news_id}`} />;

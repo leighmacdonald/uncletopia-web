@@ -1,6 +1,10 @@
-import Grid from '@material-ui/core/Grid';
+import Grid from '@material-ui/core/Grid'
 import Typography from '@material-ui/core/Typography';
-import { Button, List, ListItem, ListItemText, Paper } from '@material-ui/core';
+import Button from '@material-ui/core/Button';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import Paper from '@material-ui/core/Paper';
 import React from 'react';
 
 interface Map {
@@ -59,19 +63,17 @@ export const Maps = () => {
     ];
     return <>
         <Grid container spacing={3}>
-            <Grid item xs={12}>
-                <Typography variant={'h1'}>Map List</Typography>
-            </Grid>
             {mapList.map(m =>
                 <Grid item xs={3} key={m.name}>
-                    <Paper style={{paddingTop: "1rem"}}>
+                    <Paper style={{ paddingTop: '1rem' }}>
                         <Typography variant={'h6'}>{m.name}</Typography>
                         <List>
                             {m.maps.map((map_info) =>
                                 <ListItem key={map_info.name}>
-                                    <Button component={ListItemText} primary={map_info.name} href={map_info.link} onClick={() => {
-                                        window.open(map_info.link)
-                                    }}/>
+                                    <Button component={ListItemText} primary={map_info.name} href={map_info.link}
+                                            onClick={() => {
+                                                window.open(map_info.link);
+                                            }} />
                                 </ListItem>
                             )}
                         </List>

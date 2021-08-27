@@ -12,8 +12,8 @@
     "@types/lodash-es": "^4.17.4",
     "@types/react": "^17.0.17",
     "@types/react-dom": "^17.0.9",
+    "@types/react-leaflet": "^2.8.2",
     "@types/react-router-dom": "^5.1.8",
-    "@types/react-world-flags": "^1.4.2",
     "babel-loader": "^8.2.2",
     "copy-webpack-plugin": "^9.0.1",
     "cross-env": "^7.0.3",
@@ -23,25 +23,31 @@
     "html-webpack-plugin": "^5.3.2",
     "leaflet": "^1.7.1",
     "lodash-es": "^4.17.21",
-    "markdown": "^0.5.0",
-    "material-ui-country-flags": "^3.0.1",
-    "material-ui-flags": "^1.2.4",
     "mini-css-extract-plugin": "^2.2.0",
     "node-forge": "^0.10.0",
+    "parcel": "^2.0.0-rc.0",
+    "parcel-cli": "^1.1.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-leaflet": "^3.2.1",
     "react-router-dom": "^5.2.0",
-    "react-video-play": "^2.0.3",
-    "react-world-flags": "^1.4.0",
     "sass": "^1.37.5",
     "sass-loader": "^12.1.0",
     "style-loader": "^3.2.1",
     "ts-loader": "^9.2.5",
     "typescript": "^4.3.5",
     "webpack": "^5.50.0",
+    "webpack-bundle-analyzer": "^4.4.2",
     "webpack-cli": "^4.7.2"
   },
+  "presets": [
+    [
+      "env",
+      {
+        "modules": false
+      }
+    ]
+  ],
   "homepage": "https://uncletopia.com",
   "license": "MIT",
   "main": "src/index.tsx",
@@ -50,6 +56,8 @@
   "repository": "github.com/leighmacdonald/uncletopia-web",
   "scripts": {
     "build": "cross-env NODE_ENV=production webpack --mode production",
+    "bundle-report": "webpack-bundle-analyzer --port 4200 compilation-stats.json",
+    "stats": "webpack-cli --profile --json > compilation-stats.json",
     "watch": "cross-env NODE_ENV=development webpack watch"
   },
   "version": "0.0.1"

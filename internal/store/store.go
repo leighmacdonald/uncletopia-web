@@ -31,7 +31,7 @@ type StorageInterface interface {
 	PatreonUserSave(ctx context.Context, pa *patreon.User) error
 	PatreonUser(ctx context.Context, userID string) (*patreon.User, error)
 
-	Person(ctx context.Context, sid steamid.SID64) (*Person, error)
+	Person(ctx context.Context, sid steamid.SID64) (Person, error)
 	PersonSave(ctx context.Context, p *Person) error
 	PersonDelete(ctx context.Context, p *Person) error
 
