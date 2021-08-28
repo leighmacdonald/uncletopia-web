@@ -71,7 +71,7 @@ const ServerRow = ({ server }: ServerRowProps) => {
             <Grid item xs={1} className={classes.item}>
                 <Typography variant={'h2'}
                             className={classes.h2}
-                            gutterBottom={false}>{server?.a2s?.Players || 0} / {server?.a2s?.MaxPlayers || 32}</Typography>
+                            gutterBottom={false}>{(server?.a2s?.Players > 24 ? 24 : server?.a2s?.Players) || 0} / {server?.a2s?.MaxPlayers || 24}</Typography>
             </Grid>
             <Grid item xs={2} className={classes.item}>
                 <Button className={classes.button} onClick={() => {
