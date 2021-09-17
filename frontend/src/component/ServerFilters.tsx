@@ -8,7 +8,7 @@ import Paper from '@material-ui/core/Paper';
 import Select from '@material-ui/core/Select';
 import Slider from '@material-ui/core/Slider';
 import Switch from '@material-ui/core/Switch';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import makeStyles from '@material-ui/core/styles/makeStyles';
 import uniq from 'lodash-es/uniq';
 import { useMapStateCtx } from '../ctx/MapStateCtx';
@@ -34,16 +34,18 @@ const useStyles = makeStyles((theme) => ({
 
 export const ServerFilters = () => {
     const classes = useStyles();
-    const { setCustomRange, servers, customRange, pos, setSelectedServers, setFilterByRegion, setServers } = useMapStateCtx();
-    const [showOpenOnly, setShowOpenOnly] = useState<boolean>(false);
-    const [selectedRegion, setSelectedRegions] = useState<string[]>(['any']);
-    const [regionsToggleEnabled, setRegionsToggleEnabled] = useState<boolean>(false);
+    const {
+        setCustomRange, servers, customRange, pos, setSelectedServers,
+        setFilterByRegion, setServers, filterByRegion, selectedRegion, setSelectedRegion,
+        setShowOpenOnly, showOpenOnly
+    } = useMapStateCtx();
+
 
     const regions = uniq(['any', ...(servers || []).map(value => value.region)]);
 
     const onRegionsChange = (event: React.ChangeEvent<{ value: unknown }>) => {
         const el = event.target as any;
-        setSelectedRegions(el.value);
+        setSelectedRegion(el.value);
     };
 
     const onShowOpenOnlyChanged = (_event: any, checked: boolean) => {
@@ -51,25 +53,60 @@ export const ServerFilters = () => {
     };
 
     const onRegionsToggleEnabledChanged = (_event: any, checked: boolean) => {
-        setRegionsToggleEnabled(checked);
-        setFilterByRegion(!checked);
+        setFilterByRegion(checked);
+    };
+
+    const defaultState = {
+        'showOpenOnly': false,
+        'selectedRegion': ['any'],
+        'filterByRegion': false,
+        'customRange': 1500
+
+    };
+    useEffect(() => {
+        let state = defaultState;
+        try {
+            const val = localStorage.getItem('filters');
+            if (val) {
+                state = JSON.parse(val);
+            }
+        } catch (e) {
+            console.log(`Tried to load invalid filter state`);
+            return;
+        }
+        setShowOpenOnly(state?.showOpenOnly || defaultState.showOpenOnly);
+        setSelectedRegion((state?.selectedRegion && state.selectedRegion.length > 1)
+            ? state.selectedRegion : defaultState.selectedRegion);
+        setFilterByRegion(state?.filterByRegion || defaultState.filterByRegion);
+        setCustomRange(state?.customRange || defaultState.customRange);
+    }, []);
+
+    const saveFilterState = () => {
+        localStorage.setItem('filters', JSON.stringify({
+            'showOpenOnly': showOpenOnly,
+            'selectedRegion': selectedRegion,
+            'filterByRegion': filterByRegion,
+            'customRange': customRange
+        }));
     };
 
     useEffect(() => {
         let s = servers;
-        if (!regionsToggleEnabled && !selectedRegion.includes('any')) {
+        if (!filterByRegion && !selectedRegion.includes('any')) {
             s = s.filter(srv => selectedRegion.includes(srv.region));
         }
         if (showOpenOnly) {
             s = s.filter(srv => (srv?.a2s?.Players || 0) < (srv?.a2s?.MaxPlayers || 32));
         }
-        if (regionsToggleEnabled && customRange) {
+        if (filterByRegion && customRange) {
             s = s.filter(srv =>
                 getDistance(pos, { lat: srv.latitude, lng: srv.longitude }) < customRange * 1000
             );
         }
         setSelectedServers(s);
-    }, [selectedRegion, showOpenOnly, regionsToggleEnabled, customRange, setServers]);
+        saveFilterState();
+
+    }, [selectedRegion, showOpenOnly, filterByRegion, customRange, setServers, servers]);
 
     const marks = [
         {
@@ -95,22 +132,22 @@ export const ServerFilters = () => {
             width: '100%',
             flexWrap: 'nowrap',
             alignItems: 'center',
-            justifyContent: 'center'
+            // justifyContent: 'center'
         }}>
             <Grid item xs={2}>
                 <Typography variant={'h4'} align={'center'}>Filters</Typography>
             </Grid>
-            <Grid item xs={2}>
+            <Grid item xs>
                 <FormControlLabel
                     control={<Switch checked={showOpenOnly} onChange={onShowOpenOnlyChanged} name='checkedA' />}
                     label='Open Slots'
                 />
             </Grid>
-            <Grid item xs={2}>
+            <Grid item xs>
                 <FormControl className={classes.formControl}>
                     <InputLabel id='region-selector-label'>Region</InputLabel>
                     <Select
-                        disabled={regionsToggleEnabled}
+                        disabled={filterByRegion}
                         labelId='region-selector-label'
                         id='region-selector'
                         value={selectedRegion}
@@ -122,22 +159,24 @@ export const ServerFilters = () => {
                     </Select>
                 </FormControl>
             </Grid>
-            <Grid item xs={2}>
+            <Grid item xs>
                 <FormControlLabel
-                    control={<Switch checked={regionsToggleEnabled} onChange={onRegionsToggleEnabledChanged}
+                    control={<Switch checked={filterByRegion}
+                                     onChange={onRegionsToggleEnabledChanged}
                                      name='regionsEnabled' />}
-                    label='Filter by Range'
+                    label='By Range'
                 />
             </Grid>
             <Grid item xs style={{ paddingRight: '2rem' }}>
                 <Slider
                     style={{ zIndex: 1000 }}
-                    disabled={!regionsToggleEnabled}
-                    defaultValue={500}
-                    aria-labelledby='discrete-slider-custom'
+                    disabled={!filterByRegion}
+                    defaultValue={1000}
+                    aria-labelledby='custom-range'
                     step={100}
                     max={5000}
                     valueLabelDisplay='auto'
+                    value={customRange}
                     marks={marks}
                     onChange={(_event, value) => {
                         setCustomRange(value as number);

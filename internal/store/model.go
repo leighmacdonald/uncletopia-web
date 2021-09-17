@@ -35,13 +35,13 @@ func NewPatreonAuth(sid steamid.SID64) PatreonAuth {
 
 type News struct {
 	NewsID    int           `json:"news_id"`
-	SteamID   steamid.SID64 `json:"steam_id,int64"`
+	SteamID   steamid.SID64 `json:"steam_id,omitempty"`
 	Title     string        `json:"title"`
 	BodyMD    string        `json:"body_md"`
 	BodyHTML  string        `json:"body_html"`
 	CreatedOn time.Time     `json:"created_on"`
 	UpdatedOn time.Time     `json:"updated_on"`
-	PublishOn time.Time     `json:"publish_on"`
+	Published bool          `json:"published"`
 }
 
 type Donation struct {
@@ -66,6 +66,28 @@ func (c ServerCollection) FilterEnabled() ServerCollection {
 		}
 	}
 	return nc
+}
+
+type ServerState struct {
+	ServerId    int     `json:"server_id"`
+	NameShort   string  `json:"name_short"`
+	NameLong    string  `json:"name_long"`
+	Host        string  `json:"host"`
+	Pass        string  `json:"-"`
+	Region      string  `json:"region"`
+	Latitude    float64 `json:"latitude"`
+	Longitude   float64 `json:"longitude"`
+	CountryCode string  `json:"cc"`
+	// Full name of the game.
+	Game string `json:"Game"`
+	// Steam Application ID of game.
+	ID uint16 `json:"AppID"`
+	// Maximum number of players the server reports it can hold.
+	MaxPlayers uint8 `json:"MaxPlayers"`
+	// Number of bots on the server.
+	Bots    uint8  `json:"Bots"`
+	Map     string `json:"map"`
+	Players []extra.Player
 }
 
 type Server struct {

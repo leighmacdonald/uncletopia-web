@@ -1,5 +1,5 @@
 import { Grid } from '@material-ui/core';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { MapContainer, useMap } from 'react-leaflet';
 import { Marker } from 'react-leaflet';
 import { Circle } from 'react-leaflet';
@@ -12,22 +12,17 @@ import { getDistance } from '../geo';
 const UserPosition = () => {
     const map = useMap();
     const { setPos } = useMapStateCtx();
-    const [hasUpdated, setHasUpdated] = useState<boolean>(false);
 
     useEffect(() => {
-        if (!hasUpdated) {
-            navigator.geolocation.getCurrentPosition(pos => {
-                const userPos = {
-                    lat: pos.coords.latitude,
-                    lng: pos.coords.longitude
-                };
-                map.setView(userPos);
-                setHasUpdated(true);
-                setPos(userPos);
-            }, err => {
-                console.log(`"Failed to get user location: ${err.message}`);
-            });
-        }
+        navigator.geolocation.getCurrentPosition(pos => {
+            const userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+            map.setView(userPos);
+            setPos(userPos);
+        }, _err => {
+            const defPos = { lat: 42.434719, lng: -83.985001 }
+            map.setView(defPos);
+            setPos(defPos);
+        });
     }, []);
 
     return null;
@@ -41,7 +36,7 @@ const UserPositionMarker = () => {
 };
 
 export const UserPingRadius = () => {
-    const { pos, customRange, filterByRegion } = useMapStateCtx();
+    const { pos, customRange, filterByRegion, selectedServers, setCustomRange } = useMapStateCtx();
     const baseOpts = { color: 'green', opacity: 0.1, interactive: true };
     const markers = [
         { ...baseOpts, radius: 3000000, color: 'red' },
@@ -49,8 +44,8 @@ export const UserPingRadius = () => {
         { ...baseOpts, radius: 500000, color: 'green' }
     ];
     const c = useMemo(() => {
-        return !filterByRegion && <Circle center={pos} radius={customRange * 1000} color={'green'} />;
-    }, [customRange, pos, filterByRegion]);
+        return filterByRegion && <Circle center={pos} radius={customRange * 1000} color={'green'} />;
+    }, [customRange, pos, filterByRegion, selectedServers, setCustomRange]);
 
     return <>
         {c}
@@ -68,7 +63,7 @@ export const ServerMarkers = () => {
                            lng: s.longitude
                        }) < customRange * 1000 ? 'green' : 'red'}
                        key={s.server_id} />;
-    }), [selectedServers, customRange]);
+    }), [selectedServers, customRange, pos, servers]);
     return <>
         {servers && d}
     </>;

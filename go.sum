@@ -338,8 +338,8 @@ github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFR
 github.com/rs/xid v1.2.1/go.mod h1:+uKXf+4Djp6Md1KODXJxgGQPKngRmWyn10oCKFzNHOQ=
 github.com/rs/zerolog v1.13.0/go.mod h1:YbFCdg8HfsridGWAh22vktObvhZbQsZXe4/zB0OKkWU=
 github.com/rs/zerolog v1.15.0/go.mod h1:xYTKnLHcpfU2225ny5qZjxnj9NvkumZYjJHlAThCjNc=
-github.com/rumblefrog/go-a2s v1.0.0 h1:9IIVIOQ1bXZJeTilmzkJDeGa/9W1c089VciTbp+Wp1Y=
-github.com/rumblefrog/go-a2s v1.0.0/go.mod h1:JwbTgMTRGZcWzr3T2MUfDusrJU5Bdg8biEeZzPtN0So=
+github.com/rumblefrog/go-a2s v1.0.1 h1:0M4QUDB1Tz00tCz36r/AWB4YFO2ajksvPnd7Abzz9SE=
+github.com/rumblefrog/go-a2s v1.0.1/go.mod h1:JwbTgMTRGZcWzr3T2MUfDusrJU5Bdg8biEeZzPtN0So=
 github.com/russross/blackfriday v2.0.0+incompatible h1:cBXrhZNUf9C+La9/YpS+UHpUT8YD6Td9ZMSU9APFcsk=
 github.com/russross/blackfriday v2.0.0+incompatible/go.mod h1:JO/DiYxRf+HjHt06OyowR9PTA263kcR/rfWxYHBV53g=
 github.com/russross/blackfriday/v2 v2.0.1/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=

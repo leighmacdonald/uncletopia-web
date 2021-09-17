@@ -1,4 +1,12 @@
-import createTheme from "@material-ui/core/styles/createTheme";
+import createTheme from '@material-ui/core/styles/createTheme';
+
+export const readableFonts =  {fontFamily: [
+    '"Helvetica Neue"',
+    'Helvetica',
+    'Roboto',
+    'Arial',
+    'sans-serif'
+].join(',')}
 
 export const tf2theme = createTheme({
     typography: {
@@ -10,20 +18,14 @@ export const tf2theme = createTheme({
             'Arial',
             'sans-serif'
         ].join(','),
-        h1: {textAlign: "center", fontSize: 48, marginBottom: 12, color: '#fde1c7'},
-        h2: {textAlign: "center", fontSize: 36, marginBottom: 12, color: '#fde1c7'},
-        h3: {textAlign: "center", color: '#fde1c7'},
-        h4: {textAlign: "center", color: '#fde1c7'},
-        h5: {textAlign: "center", color: '#fde1c7'},
-        h6: {textAlign: "center", color: '#fde1c7'},
+        h1: { textAlign: 'center', fontSize: 48, marginBottom: 12 },
+        h2: { textAlign: 'center', fontSize: 36, marginBottom: 12 },
+        h3: { textAlign: 'center' },
+        h4: { textAlign: 'center'},
+        h5: { textAlign: 'center'},
+        h6: { textAlign: 'center' },
         body1: {
-            fontFamily: [
-                '"Helvetica Neue"',
-                'Helvetica',
-                'Roboto',
-                'Arial',
-                'sans-serif'
-            ].join(','),
+            ...readableFonts,
             fontWeight: 400,
             fontSize: 20
         }
@@ -31,18 +33,18 @@ export const tf2theme = createTheme({
     spacing: 6,
     palette: {
         background: {
-            paper: "rgb(20, 13, 10)",
-            default: "#261812",
+            paper: 'rgb(20, 13, 10)',
+            default: 'rgb(38,24,18)'
         },
         primary: {
-            main: "#fa9e4b"
+            main: 'rgb(250,158,75)'
         },
         secondary: {
-            main: "rgb(252, 198, 149)",
+            main: 'rgb(252, 198, 149)'
         },
         text: {
-            primary: "rgb(252, 198, 149)",
-            secondary: "rgb(255,187,126)",
-        },
-    },
-})
+            primary: 'rgb(246,231,222)',
+            secondary: 'rgb(218,189,171)'
+        }
+    }
+});

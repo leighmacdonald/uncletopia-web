@@ -18,6 +18,12 @@ export type MapState = {
 
     filterByRegion: boolean;
     setFilterByRegion: (enable: boolean) => void;
+
+    showOpenOnly: boolean
+    setShowOpenOnly: (enabled: boolean) => void;
+
+    selectedRegion: string[]
+    setSelectedRegion: (regions: string[]) => void;
 };
 
 export const MapStateCtx = createContext<MapState>({
@@ -30,7 +36,11 @@ export const MapStateCtx = createContext<MapState>({
     selectedServers: [],
     setSelectedServers: noop,
     filterByRegion: true,
-    setFilterByRegion: noop
+    setFilterByRegion: noop,
+    showOpenOnly: false,
+    setShowOpenOnly: noop,
+    selectedRegion: ['any'],
+    setSelectedRegion: noop
 });
 
 export const useMapStateCtx = () => useContext(MapStateCtx);

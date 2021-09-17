@@ -9,7 +9,7 @@ create table news
     body_md varchar not null,
     created_on timestamp with time zone not null,
     updated_on timestamp with time zone not null,
-    publish_on timestamp with time zone not null,
+    published bool default false not null,
     steam_id bigint not null
         constraint news_person_steam_id_fk
             references person

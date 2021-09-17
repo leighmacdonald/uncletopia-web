@@ -91,7 +91,7 @@ export const DonationPanel = () => {
     const classes = useStyles();
     const [selectedServer, setSelectedServer] = useState<string>('no-preference');
     const clientId = 'KggPnKF9SidCjS4wLxRhCfbD7CGSjsry8LOu9lwDZZr1A5OCR1mDGSUOhpK4akGn';
-    const redirUrl = 'https://ut.roto.su/patreon/callback';
+    const redirUrl = `${window.location.protocol}//${window.location.hostname}/patreon/callback`;
     const state = `${localStorage.getItem('token')}----${selectedServer}`;
     const link = `https://www.patreon.com/oauth2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirUrl}&state=${state}`;
     const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {

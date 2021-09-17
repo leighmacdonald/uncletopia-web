@@ -3,13 +3,10 @@
 package donation
 
 import (
-	"encoding/json"
 	"github.com/leighmacdonald/golib"
 	"github.com/leighmacdonald/uncletopia-web/internal/config"
-	"github.com/leighmacdonald/uncletopia-web/internal/store"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/mxpv/patreon-go.v1"
-	"io/ioutil"
 	"testing"
 )
 
@@ -24,15 +21,7 @@ func testPatreonClient(t *testing.T) *patreon.Client {
 		if fp == "" {
 			t.Skipf("Test token file does not exist: ~/.patreon_test_token.json")
 		}
-		b, e := ioutil.ReadFile(fp)
-		if e != nil {
-			t.Skipf("Failed to read test tokenot: %v", e)
-		}
-		var pa store.PatreonAuth
-		if err := json.Unmarshal(b, &pa); err != nil {
-			t.Skipf("Failed to decode test tokenot: %v", err)
-		}
-		client, err := NewPatreonClient(&pa)
+		client, err := NewPatreonClient()
 		require.NoError(t, err)
 		testClient = client
 	}

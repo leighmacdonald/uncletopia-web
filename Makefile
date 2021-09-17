@@ -1,4 +1,6 @@
 .PHONY: frontend
+GO_CMD=go
+GO_BUILD_FLAGS=$(GO_CMD) build -trimpath -o uncletopia-web
 
 all: build
 
@@ -23,7 +25,7 @@ serve:
 js_deps: yarn_install
 
 build: clean fmt vet
-	@CGO_ENABLED=0 go build -o uncletopia-web
+	@CGO_ENABLED=0 $(GO_BUILD_FLAGS)
 
 run: build
 	@./uncletopia-web
@@ -50,3 +52,5 @@ run_image: image
 image:
 	@docker build -t leighmacdonald/uncletopia-web:latest .
 
+publish: image
+	docker push leighmacdonald/uncletopia-web:latest

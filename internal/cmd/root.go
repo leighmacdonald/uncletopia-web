@@ -74,7 +74,7 @@ var seedCmd = &cobra.Command{
 		for _, n := range seedData.News {
 			n.CreatedOn = time.Now()
 			n.UpdatedOn = time.Now()
-			n.PublishOn = time.Now()
+			n.Published = true
 			if err := s.NewsSave(context.Background(), &n); err != nil {
 				log.Errorf("Failed to save news: %v", err)
 			}

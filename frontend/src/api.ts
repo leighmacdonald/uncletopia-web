@@ -122,16 +122,27 @@ export interface Server {
     longitude: number;
     last_has_players: Date;
     a2s: ServerState;
+    distance: number;
 }
 
 export interface News {
-    news_id: number
-    title: string
-    body_md: string
-    body_html: string
-    created_on: string
-    updated_on: string
-    publish_on: string
+    news_id: number;
+    title: string;
+    body_md: string;
+    body_html: string;
+    created_on: string;
+    updated_on: string;
+    published: boolean;
+}
+
+export interface NewsUpdatePayload {
+    title: string;
+    body_md: string;
+    published: boolean;
+}
+
+export interface DemoArchive {
+
 }
 
 export enum PermissionLevel {
@@ -144,7 +155,7 @@ export enum PermissionLevel {
 
 export const fetchServers = async () => {
     const resp = await call<Server[]>('/api/servers', 'get');
-    return resp.json;
+    return resp.json.map(value => {return {...value, "distance": 0}});
 };
 
 export const getCurrentProfile = async (): Promise<Person | apiError> => {
@@ -162,7 +173,17 @@ export const getProfile = async (
     return resp.json;
 };
 
-export const getNews = async (): Promise<News[] | apiError> => {
-    const resp = await call<News[]>(`/api/news`, 'GET');
-    return resp.json;
-};
+export const getNews = async (): Promise<News[] | apiError> =>
+    (await call<News[]>(`/api/news`, 'GET')).json
+
+export const deleteNews = async (newsId: number): Promise<boolean> =>
+    (await call(`/api/news/${newsId}`, 'DELETE')).status;
+
+export const updateNews = async (newsId: number, payload: NewsUpdatePayload): Promise<boolean> =>
+    (await call(`/api/news/${newsId}`, 'POST', payload)).status;
+
+export const createNews = async (news: NewsUpdatePayload): Promise<News> =>
+    (await call<News, NewsUpdatePayload>(`/api/news`, 'POST', news)).json;
+
+export const getDemos = async (): Promise<DemoArchive[] | apiError> =>
+    (await call<DemoArchive[]>(`/api/demos`, 'GET')).json

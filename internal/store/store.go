@@ -36,6 +36,7 @@ type StorageInterface interface {
 	PersonDelete(ctx context.Context, p *Person) error
 
 	News(ctx context.Context, showUnPublished bool) ([]News, error)
+	NewsByID(ctx context.Context, newsID int64, news *News) error
 	NewsSave(ctx context.Context, p *News) error
 	NewsDelete(ctx context.Context, p *News) error
 }

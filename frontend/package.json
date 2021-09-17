@@ -5,17 +5,22 @@
     "@babel/core": "^7.15.0",
     "@babel/preset-env": "^7.15.0",
     "@babel/preset-react": "^7.14.5",
+    "@date-io/date-fns": "^2.11.0",
     "@material-ui/core": "^4.12.3",
     "@material-ui/icons": "^4.11.2",
     "@material-ui/lab": "^4.0.0-alpha.60",
+    "@material-ui/pickers": "^3.3.10",
     "@types/leaflet": "^1.7.4",
     "@types/lodash-es": "^4.17.4",
+    "@types/marked": "^3.0.0",
     "@types/react": "^17.0.17",
     "@types/react-dom": "^17.0.9",
     "@types/react-leaflet": "^2.8.2",
     "@types/react-router-dom": "^5.1.8",
     "babel-loader": "^8.2.2",
+    "babel-polyfill": "^6.26.0",
     "copy-webpack-plugin": "^9.0.1",
+    "core-js": "^3.16.3",
     "cross-env": "^7.0.3",
     "css-loader": "^6.2.0",
     "date-fns": "^2.23.0",
@@ -23,11 +28,13 @@
     "html-webpack-plugin": "^5.3.2",
     "leaflet": "^1.7.1",
     "lodash-es": "^4.17.21",
+    "marked": "^3.0.2",
     "mini-css-extract-plugin": "^2.2.0",
     "node-forge": "^0.10.0",
     "parcel": "^2.0.0-rc.0",
     "parcel-cli": "^1.1.0",
     "react": "^17.0.2",
+    "react-app-polyfill": "^2.0.0",
     "react-dom": "^17.0.2",
     "react-leaflet": "^3.2.1",
     "react-router-dom": "^5.2.0",
@@ -60,5 +67,19 @@
     "stats": "webpack-cli --profile --json > compilation-stats.json",
     "watch": "cross-env NODE_ENV=development webpack watch"
   },
-  "version": "0.0.1"
+  "version": "0.0.1",
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all",
+      "ie >= 9"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version",
+      "ie 11"
+    ]
+  }
 }

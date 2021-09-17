@@ -1,6 +1,7 @@
 package web
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"encoding/json"
@@ -29,6 +30,7 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -39,6 +41,62 @@ type App struct {
 	router *gin.Engine
 	srv    *http.Server
 	ctx    context.Context
+}
+
+func New(db store.StorageInterface, coord *coordinator.Coordinator) (http.Handler, error) {
+	r := gin.Default()
+	staticPath := config.HTTP.StaticPath
+	if staticPath == "" {
+		staticPath = "frontend/dist/static"
+	}
+	idxPath := path.Join(staticPath, "index.html")
+
+	r.Static("/static", staticPath)
+	for _, p := range []string{"/", "/settings", "/credits", "/donate", "/servers", "/login/success", "/demos",
+		"/profile", "/maps", "/rules", "/admin/news", "/admin/donations", "/admin/servers", "/404"} {
+		r.GET(p, func(c *gin.Context) {
+			idx, err := os.ReadFile(idxPath)
+			if err != nil {
+				c.AbortWithStatus(http.StatusInternalServerError)
+				log.Errorf("Failed to load index.html")
+				return
+			}
+			c.Data(200, "text/html", idx)
+		})
+	}
+	r.POST("/coordinator/connect", onCoordinatorConnect(coord))
+	r.POST("/coordinator/disconnect", onCoordinatorDisconnect(coord))
+	r.GET("/api/servers", onApiServers(db))
+	r.GET("/api/news", onApiNews(db))
+	r.GET("/discord", func(c *gin.Context) {
+		c.Redirect(http.StatusTemporaryRedirect, "https://discord.gg/caQKCWFMrN")
+	})
+	r.GET("/auth/callback", onOpenIDCallback(db))
+	r.GET("/patreon/callback", onPatreonCallback(db))
+	r.GET("/embed", func(c *gin.Context) {
+		c.JSON(200, M{
+			"version":       "1.0",
+			"type":          "rich",
+			"title":         "Uncletopia",
+			"description":   "Uncletopia",
+			"author_name":   "Uncletopia",
+			"author_url":    "https://uncletopia.com",
+			"provider_name": "Check out my Uncletopia TF2 Servers",
+			"provider_url":  "https://uncletopia.com",
+		})
+	})
+
+	// Basic logged in user
+	authed := r.Use(authMiddleware(store.PAuthenticated, db))
+	authed.GET("/api/whoami", onApiWhoAmI())
+
+	// Admin access
+	admin := r.Use(authMiddleware(store.PAdmin, db))
+	admin.DELETE("/api/news/:news_id", onApiNewsDelete(db))
+	admin.POST("/api/news/:news_id", onApiNewsUpdate(db))
+	admin.POST("/api/news", onApiNewsCreate(db))
+
+	return r, nil
 }
 
 type APIResponse struct {
@@ -95,6 +153,137 @@ func onApiWhoAmI() gin.HandlerFunc {
 		//	return
 		//}
 		responseOK(c, http.StatusOK, currentPerson(c))
+	}
+}
+
+func newsFromParam(c *gin.Context, db store.StorageInterface) (store.News, error) {
+	var news store.News
+	idStr := c.Param("news_id")
+	newsId, errP := strconv.ParseInt(idStr, 10, 64)
+	if errP != nil {
+		return news, errP
+	}
+	e := db.NewsByID(c, newsId, &news)
+	return news, e
+
+}
+func onApiNewsDelete(db store.StorageInterface) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		n, e := newsFromParam(c, db)
+		if e != nil {
+			if e == store.ErrNoResult {
+				responseErr(c, http.StatusNotFound, nil)
+				return
+			}
+			responseErr(c, http.StatusInternalServerError, nil)
+			return
+		}
+		if errDel := db.NewsDelete(c, &n); errDel != nil {
+			responseErr(c, http.StatusInternalServerError, nil)
+			return
+		}
+		responseOK(c, http.StatusNoContent, nil)
+	}
+}
+
+type discordWH struct {
+	Username  string `json:"username"`
+	AvatarURL string `json:"avatar_url"`
+	Content   string `json:"content"`
+}
+
+type updateNewsPayload struct {
+	Title     string `json:"title"`
+	BodyMD    string `json:"body_md"`
+	Published bool   `json:"published"`
+}
+
+const botTitle = "Uncletopia Announcement"
+
+func sendWebhook(m discordWH) {
+	httpClient := &http.Client{Timeout: time.Second * 15}
+	b, errEnc := json.Marshal(m)
+	if errEnc != nil {
+		log.Errorf("Failed to marshal discord announcement: %v", errEnc)
+		return
+	}
+	cx, cancel := context.WithTimeout(context.Background(), time.Second*15)
+	defer cancel()
+	req, errReq := http.NewRequestWithContext(cx, "POST", config.Hook.DiscordAnnouncement, bytes.NewReader(b))
+	req.Header.Set("Content-Type", "application/json")
+	if errReq != nil {
+		log.Errorf("Failed to create announcement request: %v", errEnc)
+		return
+	}
+	resp, errResp := httpClient.Do(req)
+	if errResp != nil {
+		log.Errorf("Failed to send announcement request: %v", errEnc)
+		return
+	}
+	if resp.StatusCode >= 400 {
+		be, e := ioutil.ReadAll(resp.Body)
+		if e != nil {
+			log.Errorf("Failed to read error body: %v", e)
+			return
+		}
+		defer func() { _ = resp.Body.Close() }()
+		log.Errorf("Invalid response code for webhook: %d\n%v", resp.StatusCode, be)
+		return
+	}
+	log.Infof("Sent announcement to discord")
+}
+
+func onApiNewsCreate(db store.StorageInterface) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		p := currentPerson(c)
+		var r updateNewsPayload
+		if err := c.BindJSON(&r); err != nil {
+			responseErr(c, http.StatusInternalServerError, nil)
+			return
+		}
+		var u store.News
+		u.BodyMD = r.BodyMD
+		u.CreatedOn = time.Now()
+		u.UpdatedOn = time.Now()
+		u.Title = r.Title
+		u.Published = r.Published
+		u.SteamID = p.SteamID
+		if errDel := db.NewsSave(c, &u); errDel != nil {
+			responseErr(c, http.StatusInternalServerError, nil)
+			return
+		}
+		responseOK(c, http.StatusNoContent, nil)
+		go sendWebhook(discordWH{Content: u.Title + "\n\n" + u.BodyMD, Username: botTitle})
+
+	}
+}
+
+func onApiNewsUpdate(db store.StorageInterface) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		n, e := newsFromParam(c, db)
+		if e != nil {
+			if e == store.ErrNoResult {
+				responseErr(c, http.StatusNotFound, nil)
+				return
+			}
+			responseErr(c, http.StatusInternalServerError, nil)
+			return
+		}
+		var u updateNewsPayload
+		if err := c.BindJSON(&u); err != nil {
+			responseErr(c, http.StatusInternalServerError, nil)
+			return
+		}
+		n.BodyMD = u.BodyMD
+		n.Title = u.Title
+		n.Published = u.Published
+
+		if errDel := db.NewsSave(c, &n); errDel != nil {
+			responseErr(c, http.StatusInternalServerError, nil)
+			return
+		}
+		responseOK(c, http.StatusNoContent, nil)
+		go sendWebhook(discordWH{Content: u.Title + "\n\n" + u.BodyMD, Username: botTitle})
 	}
 }
 
@@ -176,60 +365,6 @@ func onCoordinatorDisconnect(coord *coordinator.Coordinator) gin.HandlerFunc {
 		coord.ClientDisconnected(coordinator.NewClient(req.Sid, c.ClientIP(), &coordinator.Filters{}))
 		responseOK(c, http.StatusNoContent, nil)
 	}
-}
-
-func New(db store.StorageInterface, coord *coordinator.Coordinator) (http.Handler, error) {
-	r := gin.Default()
-	staticPath := config.HTTP.StaticPath
-	if staticPath == "" {
-		staticPath = "frontend/dist/static"
-	}
-	idxPath := path.Join(staticPath, "index.html")
-
-	r.Static("/static", staticPath)
-	for _, p := range []string{"/", "/settings", "/credits", "/donate", "/servers", "/login/success",
-		"/profile", "/maps", "/rules", "/404"} {
-		r.GET(p, func(c *gin.Context) {
-			idx, err := os.ReadFile(idxPath)
-			if err != nil {
-				c.AbortWithStatus(http.StatusInternalServerError)
-				log.Errorf("Failed to load index.html")
-				return
-			}
-			c.Data(200, "text/html", idx)
-		})
-	}
-	r.POST("/coordinator/connect", onCoordinatorConnect(coord))
-	r.POST("/coordinator/disconnect", onCoordinatorDisconnect(coord))
-	r.GET("/api/servers", onApiServers(db))
-	r.GET("/api/news", onApiNews(db))
-	r.GET("/discord", func(c *gin.Context) {
-		c.Redirect(http.StatusTemporaryRedirect, "https://discord.gg/caQKCWFMrN")
-	})
-	r.GET("/auth/callback", onOpenIDCallback(db))
-	r.GET("/patreon/callback", onPatreonCallback(db))
-	r.GET("/embed", func(c *gin.Context) {
-		c.JSON(200, M{
-			"version":       "1.0",
-			"type":          "rich",
-			"title":         "Uncletopia",
-			"description":   "Uncletopia",
-			"author_name":   "Uncletopia",
-			"author_url":    "https://uncletopia.com",
-			"provider_name": "Check out my Uncletopia TF2 Servers",
-			"provider_url":  "https://uncletopia.com",
-		})
-	})
-
-	// Basic logged in user
-	authed := r.Use(authMiddleware(store.PAuthenticated, db))
-	authed.GET("/api/whoami", onApiWhoAmI())
-
-	// Admin access
-	//admin := r.Use(authMiddleware(store.PAdmin))
-	//admin.GET("/api/
-
-	return r, nil
 }
 
 func (a *App) Serve(opts HTTPOpts) error {
@@ -564,7 +699,7 @@ func onPatreonCallback(db store.StorageInterface) gin.HandlerFunc {
 		req, errNR := http.NewRequestWithContext(ctx, "POST",
 			"https://www.patreon.com/api/oauth2/token",
 			strings.NewReader(form.Encode()))
-		req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+		req.Header.Add("BodyMD-Type", "application/x-www-form-urlencoded")
 
 		if errNR != nil {
 			log.WithError(errNR).Errorf("Failed to create patreon request")
@@ -595,7 +730,7 @@ func onPatreonCallback(db store.StorageInterface) gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
-		pc, errPc := donation.NewPatreonClient(&put)
+		pc, errPc := donation.NewPatreonClient()
 		if errPc != nil {
 			log.WithError(errPc).Errorf("Failed to create patreon client: %s", errPc)
 			c.AbortWithStatus(http.StatusInternalServerError)

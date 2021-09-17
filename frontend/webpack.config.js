@@ -1,50 +1,54 @@
-const path = require('path')
-const CopyPlugin = require("copy-webpack-plugin");
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const path = require('path');
+const CopyPlugin = require('copy-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 // const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
-const devMode = process.env.NODE_ENV !== "production";
+const devMode = process.env.NODE_ENV !== 'production';
 const paths = {
-    src: path.join(__dirname, "src"),
-    dist: path.join(__dirname, "dist")
+    src: path.join(__dirname, 'src'),
+    dist: path.join(__dirname, 'dist')
 };
 
 module.exports = {
     entry: {
-        main: path.resolve(__dirname, './src/index.tsx')
+        main: [
+            'babel-polyfill',
+            path.resolve(__dirname, './src/index.tsx')
+        ]
     },
     output: {
         path: path.join(__dirname, '/dist/static'),
-        publicPath: "/static/",
-        filename:  devMode ? "[name].js" : "[name].[chunkhash:8].bundle.js",
-        clean: true,
+        publicPath: '/static/',
+        filename: devMode ? '[name].js' : '[name].[chunkhash:8].bundle.js',
+        clean: true
     },
     optimization: {
-        runtimeChunk: 'single',
+        // runtimeChunk: 'single',
         splitChunks: {
-            chunks: 'async',
-            minSize: 20000,
+            chunks: 'all',
+            // chunks: 'async',
+            minSize: 2000,
             minRemainingSize: 0,
             minChunks: 10,
-            maxAsyncRequests: 30,
-            maxInitialRequests: 30,
-            enforceSizeThreshold: 50000,
+            maxAsyncRequests: 3,
+            maxInitialRequests: 3,
+            enforceSizeThreshold: 5000,
             cacheGroups: {
                 defaultVendors: {
                     test: /[\\/]node_modules[\\/]/,
                     priority: -10,
-                    reuseExistingChunk: true,
+                    reuseExistingChunk: true
                 },
                 default: {
                     minChunks: 2,
                     priority: -20,
-                    reuseExistingChunk: true,
-                },
-            },
+                    reuseExistingChunk: true
+                }
+            }
         }
     },
-    devtool: 'inline-source-map',
+    devtool: devMode ? 'inline-source-map' : false,
     resolve: {
         extensions: ['.tsx', '.ts', '.js']
     },
@@ -53,58 +57,66 @@ module.exports = {
             {
                 test: /\.(ts|tsx)$/,
                 exclude: /node_modules/,
-                use: {loader: "ts-loader"},
+                use: { loader: 'ts-loader' }
             },
             {
                 test: /\.s?[ac]ss$/i,
                 use: [
-                    "style-loader",
+                    // "style-loader",
                     MiniCssExtractPlugin.loader,
                     // Creates `style` nodes from JS strings
                     // process.env.NODE_ENV !== "production"
                     //     ? "style-loader"
                     //     : MiniCssExtractPlugin.loader,
                     // // Translates CSS into CommonJS
-                    "css-loader",
+                    'css-loader',
                     {
-                        loader: "sass-loader",
-                    },
-                ],
+                        loader: 'sass-loader'
+                    }
+                ]
             },
             {
                 test: /\.(webm|mp3|webmanifest|zip)$/,
                 use: {
                     loader: 'file-loader',
                     options: {
-                        name: '[name].[ext]',
+                        name: '[name].[ext]'
                     }
-                },
+                }
             },
             {
                 test: /\.(jpg|jpeg|png|gif|svg|webp|ico)$/,
                 use: {
                     loader: 'file-loader',
                     options: {
-                        name: '[name].[ext]',
+                        name: '[name].[ext]'
                     }
-                },
-            },
+                }
+            }
         ]
     },
     plugins: [
-        // new CopyPlugin({
-        //     patterns: [
-        //         { from: "src/index.html", to: "index.html" },
-        //     ],
-        // }),
+        new CopyPlugin({
+            // TODO dont hard code these
+            patterns: [
+                { from: 'src/images/android-chrome-192x192.png' },
+                { from: 'src/images/android-chrome-512x512.png' },
+                { from: 'src/images/apple-touch-icon.png' },
+                { from: 'src/images/favicon.svg' },
+                { from: 'src/images/favicon-16x16.png' },
+                { from: 'src/images/favicon-32x32.png' },
+                { from: 'src/images/site.webmanifest' }
+
+            ]
+        }),
         // new BundleAnalyzerPlugin(),
         new MiniCssExtractPlugin({
-            filename: "index.css",
-            chunkFilename: "index.css",
+            filename: 'index.css',
+            chunkFilename: 'index.css'
         }),
         new HtmlWebpackPlugin({
-            template: path.join(paths.src, "index.html"),
-            filename: path.join(paths.dist, "static", "index.html"),
+            template: path.join(paths.src, 'index.html'),
+            filename: path.join(paths.dist, 'static', 'index.html'),
             inject: true,
             hash: false,
             minify: {
@@ -114,5 +126,5 @@ module.exports = {
                 minifyCSS: !devMode
             }
         })
-    ],
-}
+    ]
+};

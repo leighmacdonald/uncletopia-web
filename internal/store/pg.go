@@ -50,13 +50,30 @@ type pgStore struct {
 	db *pgxpool.Pool
 }
 
+func (s pgStore) NewsByID(ctx context.Context, newsID int64, n *News) error {
+	q, a, e := sb.Select("news_id", "title", "body_md", "created_on", "updated_on",
+		"published", "steam_id").
+		From("news").
+		Where(sq.Eq{"news_id": newsID}).
+		ToSql()
+	if e != nil {
+		return dbErr(e)
+	}
+	if err := s.db.QueryRow(ctx, q, a...).Scan(
+		&n.NewsID, &n.Title, &n.BodyMD, &n.CreatedOn, &n.UpdatedOn,
+		&n.Published, &n.SteamID); err != nil {
+		return dbErr(err)
+	}
+	return nil
+}
+
 func (s pgStore) News(ctx context.Context, showUnPublished bool) ([]News, error) {
 	qb := sb.Select("news_id", "title", "body_md", "created_on", "updated_on",
-		"publish_on", "steam_id").
+		"published", "steam_id").
 		From("news").
-		OrderBy("publish_on desc")
+		OrderBy("created_on desc")
 	if !showUnPublished {
-		qb.Where(sq.Gt{"publish_on": time.Now()})
+		qb.Where(sq.Eq{"published": true})
 	}
 	q, a, e := qb.ToSql()
 	if e != nil {
@@ -70,7 +87,7 @@ func (s pgStore) News(ctx context.Context, showUnPublished bool) ([]News, error)
 	var news []News
 	for rows.Next() {
 		var n News
-		if eS := rows.Scan(&n.NewsID, &n.Title, &n.BodyMD, &n.CreatedOn, &n.UpdatedOn, &n.PublishOn, &n.SteamID); eS != nil {
+		if eS := rows.Scan(&n.NewsID, &n.Title, &n.BodyMD, &n.CreatedOn, &n.UpdatedOn, &n.Published, &n.SteamID); eS != nil {
 			return nil, eS
 		}
 		news = append(news, n)
@@ -81,18 +98,18 @@ func (s pgStore) News(ctx context.Context, showUnPublished bool) ([]News, error)
 func (s pgStore) NewsSave(ctx context.Context, p *News) error {
 	if p.NewsID > 0 {
 		const qUpd = `
-			UPDATE news set title = $2, body_md = $2, updated_on = $4, publish_on = $5, steam_id = $6 
+			UPDATE news set title = $2, body_md = $3, updated_on = $4, published = $5, steam_id = $6 
 			WHERE news_id = $1`
-		_, e := s.db.Exec(ctx, qUpd, p.NewsID, p.Title, p.BodyMD, p.UpdatedOn, p.PublishOn, p.SteamID)
+		_, e := s.db.Exec(ctx, qUpd, p.NewsID, p.Title, p.BodyMD, p.UpdatedOn, p.Published, p.SteamID)
 		if e != nil {
 			return dbErr(e)
 		}
 	} else {
 		const qIns = `
-		INSERT INTO news (title, body_md, created_on, updated_on, publish_on, steam_id) 
+		INSERT INTO news (title, body_md, created_on, updated_on, published, steam_id) 
 		VALUES ($1, $2, $3, $4, $5, $6)
 		RETURNING news_id`
-		if err := s.db.QueryRow(ctx, qIns, p.Title, p.BodyMD, p.CreatedOn, p.UpdatedOn, p.PublishOn, p.SteamID).Scan(&p.NewsID); err != nil {
+		if err := s.db.QueryRow(ctx, qIns, p.Title, p.BodyMD, p.CreatedOn, p.UpdatedOn, p.Published, p.SteamID).Scan(&p.NewsID); err != nil {
 			return dbErr(err)
 		}
 	}

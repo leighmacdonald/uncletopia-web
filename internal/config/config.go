@@ -13,6 +13,7 @@ import (
 var (
 	cfgFile  string
 	Full     FullConfig
+	Hook     HookConfig
 	HTTP     HTTPConfig
 	Steam    SteamConfig
 	Patreon  PatreonConfig
@@ -26,6 +27,11 @@ type FullConfig struct {
 	Database DatabaseConfig `mapstructure:"database"`
 	HTTP     HTTPConfig     `mapstructure:"http"`
 	Steam    SteamConfig    `mapstructure:"steam"`
+	Hook     HookConfig
+}
+
+type HookConfig struct {
+	DiscordAnnouncement string `mapstructure:"discord_announcement"`
 }
 
 type HTTPConfig struct {
@@ -91,6 +97,7 @@ func Read() {
 	Patreon = Full.Patreon
 	Steam = Full.Steam
 	HTTP = Full.HTTP
+	Hook = Full.Hook
 	Database = Full.Database
 	if err := steamweb.SetKey(Steam.Key); err != nil {
 		log.Errorf("Failed to set steam api Key: %v", err)

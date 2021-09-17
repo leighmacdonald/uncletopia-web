@@ -1,4 +1,7 @@
-import { Grid } from '@material-ui/core';
+// How to alias this?
+import { Link as LinkMUI } from '@material-ui/core';
+import Avatar from '@material-ui/core/Avatar';
+import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import Toolbar from '@material-ui/core/Toolbar';
 import AppBar from '@material-ui/core/AppBar';
@@ -16,12 +19,14 @@ import React, { forwardRef, useMemo, useState } from 'react';
 import NotificationsIcon from '@material-ui/icons/Notifications';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
+import AnnouncementIcon from '@material-ui/icons/Announcement';
 import SettingsIcon from '@material-ui/icons/Settings';
 import MoreIcon from '@material-ui/icons/More';
-import { RouteComponentProps, Link, withRouter } from 'react-router-dom';
+import { Link, RouteComponentProps, withRouter } from 'react-router-dom';
 import { useCurrentUserCtx } from '../ctx/CurrentUserCtx';
 // @ts-ignore
 import SteamLogo from '../images/steam_login_sm.png';
+import { PermissionLevel } from '../api';
 
 export interface HeaderLink {
     title: string;
@@ -32,6 +37,7 @@ export interface HeaderLink {
 const links: HeaderLink[] = [
     { title: 'Home', url: '/' },
     { title: 'Servers', url: '/servers' },
+    { title: 'Demos', url: '/demos' },
     { title: 'Maps', url: '/maps' },
     { title: 'Rules', url: '/rules' },
     { title: 'Donate', url: '/donate' },
@@ -69,31 +75,15 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-export const handleOnLogin = (): void => {
-    const r = `${window.location.protocol}//${window.location.hostname}/auth/callback?return_url=${window.location.pathname}`;
+export const steamOIDUrl = (): string => {
     // noinspection HttpUrlsUsage
-    const oid =
-        'https://steamcommunity.com/openid/login' +
-        '?openid.ns=' +
-        encodeURIComponent('http://specs.openid.net/auth/2.0') +
+    return `https://steamcommunity.com/openid/login?openid.ns=` + encodeURIComponent('http://specs.openid.net/auth/2.0') +
         '&openid.mode=checkid_setup' +
-        '&openid.return_to=' +
-        encodeURIComponent(r) +
-        `&openid.realm=` +
-        encodeURIComponent(
-            `${window.location.protocol}//${window.location.hostname}`
-        ) +
-        '&openid.ns.sreg=' +
-        encodeURIComponent('http://openid.net/extensions/sreg/1.1') +
-        '&openid.claimed_id=' +
-        encodeURIComponent(
-            'http://specs.openid.net/auth/2.0/identifier_select'
-        ) +
-        '&openid.identity=' +
-        encodeURIComponent(
-            'http://specs.openid.net/auth/2.0/identifier_select'
-        );
-    window.open(oid, '_self');
+        '&openid.return_to=' + encodeURIComponent(`${window.location.protocol}//${window.location.hostname}/auth/callback?return_url=${window.location.pathname}`) +
+        `&openid.realm=` + encodeURIComponent(`${window.location.protocol}//${window.location.hostname}`) +
+        '&openid.ns.sreg=' + encodeURIComponent('http://openid.net/extensions/sreg/1.1') +
+        '&openid.claimed_id=' + encodeURIComponent('http://specs.openid.net/auth/2.0/identifier_select') +
+        '&openid.identity=' + encodeURIComponent('http://specs.openid.net/auth/2.0/identifier_select');
 };
 
 interface GLinkProps {
@@ -237,7 +227,7 @@ const TopBar = ({ history }: RouteComponentProps): JSX.Element => {
         <>
             <AppBar position='fixed'>
                 <Toolbar variant={'regular'} className={classes.toolbar} disableGutters={false}>
-                    <Typography variant='h3' style={{ marginRight: '1rem' }}>
+                    <Typography variant='h3' color={'primary'} style={{ marginRight: '1rem' }}>
                         Uncletopia
                     </Typography>
                     {links.map(props => <RenderMenuButton key={`m-${props.title}`} {...props} />)}
@@ -250,17 +240,17 @@ const TopBar = ({ history }: RouteComponentProps): JSX.Element => {
                         onClick={handleUserMenu}
                         className={classes.buttons}
                     >
-                        <img src={currentUser?.steam_profile.avatar} alt={'avatar'} />
+                        <Avatar alt={currentUser?.steam_profile?.personaname} src={currentUser?.steam_profile.avatar} />
                     </Button>
                     }
                     <div className={classes.sectionDesktop}>
                         {currentUser.steam_id == '' &&
-                        <Button onClick={handleOnLogin}>
+                        <LinkMUI component={Button} href={steamOIDUrl()}>
                             <img
                                 src={SteamLogo}
                                 alt={'Steam Login'}
                             />
-                        </Button>
+                        </LinkMUI>
                         }
                         {currentUser.steam_id !== '' && (
                             <Menu
@@ -279,8 +269,12 @@ const TopBar = ({ history }: RouteComponentProps): JSX.Element => {
                                 onClose={handleUserMenuClose}
                                 title={currentUser?.steam_profile?.personaname || 'Guest'}
                             >
-                                {renderLinkedMenuItem('Profile', '/profile', <AccountCircleIcon color={'secondary'}/>)}
-                                {renderLinkedMenuItem('Logout', '/logout', <ExitToAppIcon color={'secondary'}/>)}
+                                {renderLinkedMenuItem('Profile', '/profile', <AccountCircleIcon color={'secondary'} />)}
+                                {currentUser?.steam_profile?.steamid != '' &&
+                                currentUser.permission_level >= PermissionLevel.Admin &&
+                                renderLinkedMenuItem('News', '/admin/news',
+                                    <AnnouncementIcon color={'secondary'} />)}
+                                {renderLinkedMenuItem('Logout', '/logout', <ExitToAppIcon color={'secondary'} />)}
                             </Menu>)}
                     </div>
                     <div className={classes.sectionMobile}>

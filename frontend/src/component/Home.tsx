@@ -32,14 +32,14 @@ const useStyles = makeStyles((theme) => ({
 
 export const BlogEntry = ({ entry }: BlogEntryProps) => {
     const classes = useStyles();
-    const d = parseISO(entry.publish_on);
+    const d = parseISO(entry.created_on);
     return <Paper className={classes.paper}>
         <Grid container>
             <Grid item>
                 <Grid container>
                     <Grid item>
-                        <Typography variant={'h2'} color={'primary'}>{entry.title}</Typography>
-                        <Typography variant={'subtitle1'} color={'secondary'}>{format(d, 'yyyy-MM-dd')}</Typography>
+                        <Typography variant={'h2'}>{entry.title}</Typography>
+                        <Typography variant={'subtitle1'}>{format(d, 'yyyy-MM-dd')}</Typography>
                     </Grid>
                 </Grid>
                 <Grid container>
@@ -68,7 +68,7 @@ export const Home = () => {
     );
 
     return <Grid container justifyContent={'center'}>
-        <Grid item xs={8}>
+        <Grid item xs={12} lg={8}>
             {(news ?? []).map((e) => {
                 return <BlogEntry entry={e} key={`entry-${e.news_id}`} />;
             })}
