@@ -699,7 +699,7 @@ func onPatreonCallback(db store.StorageInterface) gin.HandlerFunc {
 		req, errNR := http.NewRequestWithContext(ctx, "POST",
 			"https://www.patreon.com/api/oauth2/token",
 			strings.NewReader(form.Encode()))
-		req.Header.Add("BodyMD-Type", "application/x-www-form-urlencoded")
+		req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 		if errNR != nil {
 			log.WithError(errNR).Errorf("Failed to create patreon request")

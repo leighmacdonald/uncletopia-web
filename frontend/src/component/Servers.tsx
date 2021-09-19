@@ -15,7 +15,7 @@ import { ServerFilters } from './ServerFilters';
 import Link from '@material-ui/core/Link';
 import CheckIcon from '@material-ui/icons/Check';
 import { Flag } from './Flag';
-import { ButtonGroup, LinearProgress, LinearProgressProps } from '@material-ui/core';
+import { ButtonGroup, Card, CardContent, LinearProgress, LinearProgressProps } from '@material-ui/core';
 import sum from 'lodash-es/sum';
 import Box from '@material-ui/core/Box';
 import { getDistance } from '../geo';
@@ -214,7 +214,21 @@ export const ServerList = () => {
     </Grid>;
 };
 
+export default function ServerNotice() {
 
+    return (
+        <Card style={{marginBottom: "0.5rem"}}>
+            <CardContent>
+                <Typography color="textSecondary" variant={'h6'}>Singapore</Typography>
+                <Typography color="textSecondary" variant={'body1'}>
+                    Singapore servers are currently experiencing issues with upstream filtering. The servers
+                    are in fact alive, but some users may have trouble connecting using the website or server browser.
+                    You can still connect manually via console by using the copy button and pasting it into your TF2 console.
+                </Typography>
+            </CardContent>
+        </Card>
+    )
+}
 
 export const Servers = () => {
     const [servers, setServers] = useState<Server[]>([]);
@@ -260,6 +274,7 @@ export const Servers = () => {
             <ServerQueue />
             <ServerStats />
             <ServerList />
+            <ServerNotice />
         </MapStateCtx.Provider>
     </>;
 };
