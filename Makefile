@@ -22,6 +22,10 @@ watch:
 serve:
 	@CGO_ENABLED=0 go run main.go
 
+bump_deps:
+	go get -u ./...
+	cd frontend && yarn upgrade-interactive --latest
+
 js_deps: yarn_install
 
 build: clean fmt vet

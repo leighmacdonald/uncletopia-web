@@ -22,7 +22,7 @@ import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import AnnouncementIcon from '@material-ui/icons/Announcement';
 import SettingsIcon from '@material-ui/icons/Settings';
 import MoreIcon from '@material-ui/icons/More';
-import { Link, RouteComponentProps, withRouter } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useCurrentUserCtx } from '../ctx/CurrentUserCtx';
 // @ts-ignore
 import SteamLogo from '../images/steam_login_sm.png';
@@ -74,6 +74,21 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
+//
+// export const withRouter = (Component: any) => {
+//     const Wrapper = (props: any) => {
+//         const history = useHistory();
+//
+//         return (
+//             <Component
+//                 history={history}
+//                 {...props}
+//             />
+//         );
+//     };
+//
+//     return Wrapper;
+// };
 
 export const steamOIDUrl = (): string => {
     // noinspection HttpUrlsUsage
@@ -112,7 +127,7 @@ export function RenderMenuButton(link: HeaderLink) {
     return <GLink primary={link.title} to={link.url} />;
 }
 
-const TopBar = ({ history }: RouteComponentProps): JSX.Element => {
+const TopBar = ({ history }: any): JSX.Element => {
     const classes = useStyles();
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [anchorProfileMenuEl, setAnchorProfileMenuEl] =
@@ -296,14 +311,13 @@ const TopBar = ({ history }: RouteComponentProps): JSX.Element => {
         </>
     );
 };
-const TopBarWithRouter = withRouter(TopBar);
 
 export const Header = () => {
     return (
         <Paper style={{ marginBottom: '2rem' }}>
             <Grid container>
                 <Grid item md={12}>
-                    <TopBarWithRouter />
+                    <TopBar />
                 </Grid>
             </Grid>
         </Paper>

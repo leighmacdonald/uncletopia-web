@@ -13,7 +13,7 @@ import List from '@material-ui/core/List';
 import Button from '@material-ui/core/Button';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import Box from '@material-ui/core/Box';
-import marked from 'marked';
+import { marked } from 'marked';
 import { readableFonts } from '../Theme';
 import IconButton from '@material-ui/core/IconButton';
 import PublicIcon from '@material-ui/icons/Public';
@@ -45,10 +45,12 @@ const TabPanel = ({ value, index, children }: TabPanelProps) => {
         </div>
     );
 };
+
 const emptyNews = {
     news_id: 0, body_md: '', updated_on: '', published: false,
     body_html: '', title: '', created_on: '', steam_id: 0
 };
+
 export const AdminNews = () => {
     const [articles, setArticles] = useState<News[]>([]);
     const [current, setCurrent] = useState<News>(emptyNews);
@@ -153,8 +155,8 @@ export const AdminNews = () => {
                                     }
                                 }
                             }}>Reset</Button>
-                            <Button style={{ color: 'red' }} onClick={() => {
-                                onDelete(current.news_id);
+                            <Button style={{ color: 'red' }} onClick={async () => {
+                                await onDelete(current.news_id);
                             }}>Delete</Button>
                         </ButtonGroup>
 
@@ -238,8 +240,8 @@ export const AdminNews = () => {
                                 <IconButton color={'primary'} onClick={() => {
                                     loadArticle(a);
                                 }}><EditIcon /></IconButton>
-                                <IconButton color={'primary'} onClick={() => {
-                                    onDelete(a.news_id);
+                                <IconButton color={'primary'} onClick={async () => {
+                                    await onDelete(a.news_id);
                                 }}><DeleteForeverIcon /></IconButton>
                             </ButtonGroup>
                             </ListItemText>

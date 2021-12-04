@@ -215,13 +215,12 @@ export const ServerList = () => {
 };
 
 export default function ServerNotice() {
-
     return (
         <Card style={{marginBottom: "0.5rem"}}>
             <CardContent>
-                <Typography color="textSecondary" variant={'h6'}>Singapore</Typography>
+                <Typography color="textSecondary" variant={'h6'}>Singapore Notice</Typography>
                 <Typography color="textSecondary" variant={'body1'}>
-                    Singapore servers are currently experiencing issues with upstream filtering. The servers
+                    Singapore servers are currently experiencing on-going issues with upstream filtering. The servers
                     are in fact alive, but some users may have trouble connecting using the website or server browser.
                     You can still connect manually via console by using the copy button and pasting it into your TF2 console.
                 </Typography>
@@ -238,7 +237,6 @@ export const Servers = () => {
     const [filterByRegion, setFilterByRegion] = useState<boolean>(false);
     const [showOpenOnly, setShowOpenOnly] = useState<boolean>(false);
     const [selectedRegion, setSelectedRegion] = useState<string[]>(['any']);
-
 
     const loadServers = useCallback(async () => {
         try {

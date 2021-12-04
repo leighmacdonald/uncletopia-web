@@ -1,6 +1,6 @@
 import { PermissionLevel } from '../api';
-import { Redirect } from 'react-router-dom';
 import React from 'react';
+import { Navigate } from 'react-router-dom';
 
 /**
  * This is what the user gets redirected to after a successful steam openid redirect.
@@ -22,5 +22,5 @@ export const LoginSuccess = (): JSX.Element => {
     if (next_url == null || next_url == '') {
         next_url = '/';
     }
-    return <Redirect to={next_url} />;
+    return <Navigate to={next_url} />;
 };

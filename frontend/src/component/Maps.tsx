@@ -7,10 +7,12 @@ import Paper from '@material-ui/core/Paper';
 import React from 'react';
 import { Link } from '@material-ui/core';
 import FiberNewIcon from '@material-ui/icons/FiberNew';
+import ACUnitIcon from '@material-ui/icons/AcUnit';
+
 interface Map {
     name: string;
     link: string;
-    isNew: boolean;
+    icon: 'none' | 'new' | 'smissmas';
 }
 
 interface MapSet {
@@ -22,61 +24,66 @@ export const Maps = () => {
     const mapList: MapSet[] = [
         {
             name: 'Payload', maps: [
-                { name: 'Badwater', link: 'https://wiki.teamfortress.com/wiki/Badwater_Basin', isNew: false },
-                { name: 'Barnblitz', link: 'https://wiki.teamfortress.com/wiki/Barnblitz', isNew: false },
-                { name: 'Borneo', link: 'https://wiki.teamfortress.com/wiki/Borneo', isNew: false },
-                { name: 'Frontier', link: 'https://wiki.teamfortress.com/wiki/Frontier', isNew: false },
-                { name: 'Gold Rush', link: 'https://wiki.teamfortress.com/wiki/Gold_Rush', isNew: true },
-                { name: 'Pier', link: 'https://wiki.teamfortress.com/wiki/Pier', isNew: false },
-                { name: 'Snowycoast', link: 'https://wiki.teamfortress.com/wiki/Snowycoast', isNew: false },
-                { name: 'Swiftwater', link: 'https://wiki.teamfortress.com/wiki/Swiftwater', isNew: false },
-                { name: 'Thunder Mountain', link: 'https://wiki.teamfortress.com/wiki/Thunder_Mountain', isNew: false },
-                { name: 'Upward', link: 'https://wiki.teamfortress.com/wiki/Upward', isNew: false }
+                { name: 'Badwater', link: 'https://wiki.teamfortress.com/wiki/Badwater_Basin', icon: 'none' },
+                { name: 'Barnblitz', link: 'https://wiki.teamfortress.com/wiki/Barnblitz', icon: 'none' },
+                { name: 'Breadspace', link: 'https://wiki.teamfortress.com/wiki/Breadspace', icon: 'smissmas' },
+                { name: 'Borneo', link: 'https://wiki.teamfortress.com/wiki/Borneo', icon: 'none' },
+                { name: 'Chilly', link: 'https://wiki.teamfortress.com/wiki/Chilly', icon: 'smissmas' },
+                { name: 'Frontier', link: 'https://wiki.teamfortress.com/wiki/Frontier', icon: 'none' },
+                { name: 'Gold Rush', link: 'https://wiki.teamfortress.com/wiki/Gold_Rush', icon: 'new' },
+                { name: 'Pier', link: 'https://wiki.teamfortress.com/wiki/Pier', icon: 'none' },
+                { name: 'Polar', link: 'https://wiki.teamfortress.com/wiki/Polar', icon: 'smissmas' },
+                { name: 'Snowycoast', link: 'https://wiki.teamfortress.com/wiki/Snowycoast', icon: 'none' },
+                { name: 'SnowVille', link: 'https://wiki.teamfortress.com/wiki/SnowVille', icon: 'smissmas' },
+                { name: 'Swiftwater', link: 'https://wiki.teamfortress.com/wiki/Swiftwater', icon: 'none' },
+                { name: 'Thunder Mountain', link: 'https://wiki.teamfortress.com/wiki/Thunder_Mountain', icon: 'none' },
+                { name: 'Upward', link: 'https://wiki.teamfortress.com/wiki/Upward', icon: 'none' },
+                { name: 'Wutville', link: 'https://wiki.teamfortress.com/wiki/Wutville', icon: 'smissmas' }
             ]
         },
         {
             name: 'Control Point', maps: [
-                { name: 'Foundry', link: 'https://wiki.teamfortress.com/wiki/Foundry_(Control_Point)', isNew: true },
-                { name: 'Granary', link: 'https://wiki.teamfortress.com/wiki/Granary_(Control_Point)', isNew: true },
-                { name: 'Gullywash', link: 'https://wiki.teamfortress.com/wiki/Gullywash', isNew: true },
-                { name: 'Metalworks', link: 'https://wiki.teamfortress.com/wiki/Metalworks', isNew: false },
-                { name: 'Powerhouse', link: 'https://wiki.teamfortress.com/wiki/Powerhouse', isNew: true },
-                { name: 'Process', link: 'https://wiki.teamfortress.com/wiki/Process', isNew: false },
-                { name: 'Snakewater', link: 'https://wiki.teamfortress.com/wiki/Snakewater', isNew: false },
-                { name: 'Sunshine', link: 'https://wiki.teamfortress.com/wiki/Sunshine', isNew: false }
+                { name: 'Foundry', link: 'https://wiki.teamfortress.com/wiki/Foundry_(Control_Point)', icon: 'new' },
+                { name: 'Granary', link: 'https://wiki.teamfortress.com/wiki/Granary_(Control_Point)', icon: 'new' },
+                { name: 'Gullywash', link: 'https://wiki.teamfortress.com/wiki/Gullywash', icon: 'new' },
+                { name: 'Metalworks', link: 'https://wiki.teamfortress.com/wiki/Metalworks', icon: 'none' },
+                { name: 'Powerhouse', link: 'https://wiki.teamfortress.com/wiki/Powerhouse', icon: 'new' },
+                { name: 'Process', link: 'https://wiki.teamfortress.com/wiki/Process', icon: 'none' },
+                { name: 'Snakewater', link: 'https://wiki.teamfortress.com/wiki/Snakewater', icon: 'none' },
+                { name: 'Sunshine', link: 'https://wiki.teamfortress.com/wiki/Sunshine', icon: 'none' }
             ]
         },
         {
             name: 'KOTH', maps: [
-                {
-                    name: 'Badlands',
-                    link: 'https://wiki.teamfortress.com/wiki/Badlands_(King_of_the_Hill)',
-                    isNew: false
-                },
-                { name: 'Brazil', link: 'https://wiki.teamfortress.com/wiki/Brazil', isNew: true },
-                { name: 'Highpass', link: 'https://wiki.teamfortress.com/wiki/Highpass', isNew: false },
-                { name: 'Kong King', link: 'https://wiki.teamfortress.com/wiki/Kong_King', isNew: false },
-                { name: 'Lakeside', link: 'https://wiki.teamfortress.com/wiki/Lakeside', isNew: false },
-                { name: 'Lazarus', link: 'https://wiki.teamfortress.com/wiki/Lazarus', isNew: true    },
-                { name: 'Sawmill', link: 'https://wiki.teamfortress.com/wiki/Sawmill', isNew: false },
-                { name: 'Suijin', link: 'https://wiki.teamfortress.com/wiki/Suijin', isNew: false },
-                { name: 'Viaduct', link: 'https://wiki.teamfortress.com/wiki/Viaduct', isNew: false }
+                { name: 'Badlands', link: 'https://wiki.teamfortress.com/wiki/Badlands_(King_of_the_Hill)', icon: 'none' },
+                { name: 'Brazil', link: 'https://wiki.teamfortress.com/wiki/Brazil', icon: 'new' },
+                { name: 'Cascade', link: 'https://wiki.teamfortress.com/wiki/Cascade', icon: 'smissmas' },
+                { name: 'Highpass', link: 'https://wiki.teamfortress.com/wiki/Highpass', icon: 'none' },
+                { name: 'Kong King', link: 'https://wiki.teamfortress.com/wiki/Kong_King', icon: 'none' },
+                { name: 'Lakeside', link: 'https://wiki.teamfortress.com/wiki/Lakeside', icon: 'none' },
+                { name: 'Lazarus', link: 'https://wiki.teamfortress.com/wiki/Lazarus', icon: 'new' },
+                { name: 'Sawmill', link: 'https://wiki.teamfortress.com/wiki/Sawmill', icon: 'none' },
+                { name: 'Suijin', link: 'https://wiki.teamfortress.com/wiki/Suijin', icon: 'none' },
+                { name: 'Viaduct', link: 'https://wiki.teamfortress.com/wiki/Viaduct', icon: 'none' }
             ]
         },
         {
             name: 'Attack/Defend', maps: [
-                { name: 'Dustbowl', link: 'https://wiki.teamfortress.com/wiki/Dustbowl', isNew: false },
-                { name: 'Gorge', link: 'https://wiki.teamfortress.com/wiki/Gorge', isNew: false },
-                { name: 'Gravel Pit', link: 'https://wiki.teamfortress.com/wiki/Gravel_Pit', isNew: true },
-                { name: 'Mossrock', link: 'https://wiki.teamfortress.com/wiki/Mossrock', isNew: false },
-                { name: 'Mountain Lab', link: 'https://wiki.teamfortress.com/wiki/Mountain_Lab', isNew: false },
-                { name: 'Steel', link: 'https://wiki.teamfortress.com/wiki/Steel', isNew: false },
-                { name: 'Mercenary Park', link: 'https://wiki.teamfortress.com/wiki/Mercenary_Park', isNew: true }
+                { name: 'Altitude', link: 'https://wiki.teamfortress.com/wiki/Altitude', icon: 'smissmas' },
+                { name: 'Dustbowl', link: 'https://wiki.teamfortress.com/wiki/Dustbowl', icon: 'none' },
+                { name: 'Gorge', link: 'https://wiki.teamfortress.com/wiki/Gorge', icon: 'none' },
+                { name: 'Gravel Pit', link: 'https://wiki.teamfortress.com/wiki/Gravel_Pit', icon: 'new' },
+                { name: 'Mossrock', link: 'https://wiki.teamfortress.com/wiki/Mossrock', icon: 'none' },
+                { name: 'Mountain Lab', link: 'https://wiki.teamfortress.com/wiki/Mountain_Lab', icon: 'none' },
+                { name: 'Steel', link: 'https://wiki.teamfortress.com/wiki/Steel', icon: 'none' },
+                { name: 'Mercenary Park', link: 'https://wiki.teamfortress.com/wiki/Mercenary_Park', icon: 'new' }
             ]
         },
         {
             name: 'CTF', maps: [
-                { name: 'Landfall', link: 'https://wiki.teamfortress.com/wiki/Landfall', isNew: true }
+                { name: 'Doublefrost', link: 'https://wiki.teamfortress.com/wiki/Doublefrost', icon: "smissmas" },
+                { name: 'Landfall', link: 'https://wiki.teamfortress.com/wiki/Landfall',icon: "new" },
+                { name: 'Snowfall', link: 'https://wiki.teamfortress.com/wiki/Snowfall', icon: "smissmas" }
             ]
         }
     ];
@@ -89,9 +96,13 @@ export const Maps = () => {
                         <List>
                             {m.maps.map((map_info) =>
                                 <ListItem key={map_info.name}>
-                                    <Link component={Button} fullWidth href={map_info.link} style={{ textDecoration: 'none' }}>
+                                    <Link component={Button} fullWidth href={map_info.link}
+                                          style={{ textDecoration: 'none' }}>
                                         {map_info.name}
-                                        {map_info.isNew && <FiberNewIcon style={{color: "orange", paddingLeft: "4px"}} />}
+                                        {map_info.icon == "new" &&
+                                            <FiberNewIcon style={{ color: 'orange', paddingLeft: '4px' }} />}
+                                        {map_info.icon == "smissmas" &&
+                                            <ACUnitIcon style={{ color: 'rgba(127,195,255,0.66)', paddingLeft: '4px' }} />}
                                     </Link>
                                 </ListItem>
                             )}

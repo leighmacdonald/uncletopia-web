@@ -5,7 +5,7 @@ import { Header } from './Header';
 import { Footer } from './Footer';
 import {
     BrowserRouter as Router,
-    Switch,
+    Routes,
     Route
 } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
@@ -27,7 +27,6 @@ import { AdminNews } from './AdminNews';
 import MuiPickersUtilsProvider from '@material-ui/pickers/MuiPickersUtilsProvider';
 import DateFnsUtils from '@date-io/date-fns';
 import { Demos } from './Demos';
-
 
 export const App = () => {
     const [currentUser, setCurrentUser] = useState<NonNullable<Person>>(GuestProfile);
@@ -59,30 +58,28 @@ export const App = () => {
                                     <Flashes flashes={flashes} />
                                 </UserFlashCtx.Provider>
                                 <Container maxWidth='lg'>
-                                    <Switch>
-                                        <Route exact path='/' component={Home} />
-                                        <Route exact path='/servers' component={Servers} />
-                                        <Route exact path='/maps' component={Maps} />
-                                        <Route exact path='/demos' component={Demos} />
-                                        <Route exact path='/rules' component={Rules} />
-                                        <Route exact path='/donate' component={Donate} />
-                                        <Route exact path='/discord' component={DiscordLink} />
-                                        <Route exact path='/profile' component={UserProfile} />
+                                    <Routes>
+                                        <Route path='/' element={<Home />} />
+                                        <Route path='/servers' element={<Servers />} />
+                                        <Route path='/maps' element={<Maps />} />
+                                        <Route path='/demos' element={<Demos />} />
+                                        <Route path='/rules' element={<Rules />} />
+                                        <Route path='/donate' element={<Donate />} />
+                                        <Route path='/discord' element={<DiscordLink />} />
+                                        <Route path='/profile' element={<UserProfile />} />
                                         <Route
-                                            exact
                                             path={'/login/success'}
-                                            component={LoginSuccess}
+                                            element={<LoginSuccess />}
                                         />
                                         <Route
-                                            exact
                                             path={'/logout'}
-                                            component={Logout}
+                                            element={<Logout />}
                                         />
                                         <Route
-                                            exact
                                             path={'/admin/news'}
-                                            component={AdminNews} />
-                                    </Switch>
+                                            element={<AdminNews />}
+                                        />
+                                    </Routes>
                                     <Footer />
                                 </Container>
                             </Container>
