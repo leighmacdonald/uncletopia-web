@@ -4,8 +4,6 @@ import { MapContainer, useMap } from 'react-leaflet';
 import { Marker } from 'react-leaflet';
 import { Circle } from 'react-leaflet';
 import { TileLayer } from 'react-leaflet';
-
-// import { TileLayer, useMap, Circle } from 'react-leaflet/esm';
 import { useMapStateCtx } from '../ctx/MapStateCtx';
 import { getDistance } from '../geo';
 
@@ -14,15 +12,20 @@ const UserPosition = () => {
     const { setPos } = useMapStateCtx();
 
     useEffect(() => {
-        navigator.geolocation.getCurrentPosition(pos => {
-            const userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-            map.setView(userPos);
-            setPos(userPos);
-        }, _err => {
-            const defPos = { lat: 42.434719, lng: -83.985001 }
+        const defPos = { lat: 42.434719, lng: -83.985001 }
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(pos => {
+                const userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                map.setView(userPos);
+                setPos(userPos);
+            }, _err => {
+                map.setView(defPos);
+                setPos(defPos);
+            });
+        } else {
             map.setView(defPos);
             setPos(defPos);
-        });
+        }
     }, []);
 
     return null;
@@ -72,8 +75,8 @@ export const ServerMarkers = () => {
 export const ServerMap = () =>
     <Grid container>
         <Grid item xs={12}>
-            <MapContainer zoom={3} scrollWheelZoom={true} id={'map'} style={{ height: '500px', width: '100%' }}
-                          attributionControl={false}>
+            <MapContainer zoom={4} scrollWheelZoom={true} id={'map'} style={{ height: '500px', width: '100%' }}
+                          attributionControl={false} minZoom={3} worldCopyJump={true}>
                 <TileLayer url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png' />
                 <UserPosition />
                 <ServerMarkers />
