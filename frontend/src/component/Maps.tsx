@@ -1,13 +1,14 @@
-import Grid from '@material-ui/core/Grid';
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import Paper from '@material-ui/core/Paper';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import Paper from '@mui/material/Paper';
 import React from 'react';
-import { Link } from '@material-ui/core';
-import FiberNewIcon from '@material-ui/icons/FiberNew';
-import ACUnitIcon from '@material-ui/icons/AcUnit';
+import Link from '@mui/material/Link';
+import FiberNewIcon from '@mui/icons-material/FiberNew';
+import ACUnitIcon from '@mui/icons-material/AcUnit';
+import Masonry from '@mui/lab/Masonry';
 
 interface Map {
     name: string;
@@ -55,7 +56,11 @@ export const Maps = () => {
         },
         {
             name: 'KOTH', maps: [
-                { name: 'Badlands', link: 'https://wiki.teamfortress.com/wiki/Badlands_(King_of_the_Hill)', icon: 'none' },
+                {
+                    name: 'Badlands',
+                    link: 'https://wiki.teamfortress.com/wiki/Badlands_(King_of_the_Hill)',
+                    icon: 'none'
+                },
                 { name: 'Brazil', link: 'https://wiki.teamfortress.com/wiki/Brazil', icon: 'new' },
                 { name: 'Cascade', link: 'https://wiki.teamfortress.com/wiki/Cascade', icon: 'smissmas' },
                 { name: 'Highpass', link: 'https://wiki.teamfortress.com/wiki/Highpass', icon: 'none' },
@@ -81,17 +86,17 @@ export const Maps = () => {
         },
         {
             name: 'CTF', maps: [
-                { name: 'Doublefrost', link: 'https://wiki.teamfortress.com/wiki/Doublefrost', icon: "smissmas" },
-                { name: 'Landfall', link: 'https://wiki.teamfortress.com/wiki/Landfall',icon: "new" },
-                { name: 'Snowfall', link: 'https://wiki.teamfortress.com/wiki/Snowfall', icon: "smissmas" }
+                { name: 'Doublefrost', link: 'https://wiki.teamfortress.com/wiki/Doublefrost', icon: 'smissmas' },
+                { name: 'Landfall', link: 'https://wiki.teamfortress.com/wiki/Landfall', icon: 'new' },
+                { name: 'Snowfall', link: 'https://wiki.teamfortress.com/wiki/Snowfall', icon: 'smissmas' }
             ]
         }
     ];
     return <>
-        <Grid container spacing={3}>
-            {mapList.map(m =>
-                <Grid item xs={6} lg={3} key={m.name}>
-                    <Paper style={{ paddingTop: '1rem' }}>
+        <Grid container spacing={3} style={{ paddingTop: '1rem' }}>
+            <Masonry columns={3} spacing={3}>
+                {mapList.map(m =>
+                    <Paper style={{ paddingTop: '1rem' }} key={m.name}>
                         <Typography variant={'h6'}>{m.name}</Typography>
                         <List>
                             {m.maps.map((map_info) =>
@@ -99,17 +104,18 @@ export const Maps = () => {
                                     <Link component={Button} fullWidth href={map_info.link}
                                           style={{ textDecoration: 'none' }}>
                                         {map_info.name}
-                                        {map_info.icon == "new" &&
-                                            <FiberNewIcon style={{ color: 'orange', paddingLeft: '4px' }} />}
-                                        {map_info.icon == "smissmas" &&
-                                            <ACUnitIcon style={{ color: 'rgba(127,195,255,0.66)', paddingLeft: '4px' }} />}
+                                        {map_info.icon == 'new' &&
+                                        <FiberNewIcon style={{ color: 'orange', paddingLeft: '4px' }} />}
+                                        {map_info.icon == 'smissmas' &&
+                                        <ACUnitIcon style={{ color: 'rgba(127,195,255,0.66)', paddingLeft: '4px' }} />}
                                     </Link>
                                 </ListItem>
                             )}
                         </List>
                     </Paper>
-                </Grid>
-            )}
+                )}
+
+            </Masonry>
         </Grid>
     </>;
 };

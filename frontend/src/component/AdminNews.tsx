@@ -1,29 +1,27 @@
 import React, { useCallback, useMemo } from 'react';
 import { useEffect, useState } from 'react';
 import { createNews, deleteNews, getNews, NewsUpdatePayload, News, updateNews } from '../api';
-import Grid from '@material-ui/core/Grid';
-import Typography from '@material-ui/core/Typography';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import Paper from '@material-ui/core/Paper';
-import Tab from '@material-ui/core/Tab';
-import Tabs from '@material-ui/core/Tabs';
-import TextField from '@material-ui/core/TextField';
-import List from '@material-ui/core/List';
-import Button from '@material-ui/core/Button';
-import ButtonGroup from '@material-ui/core/ButtonGroup';
-import Box from '@material-ui/core/Box';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import Paper from '@mui/material/Paper';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import TextField from '@mui/material/TextField';
+import List from '@mui/material/List';
+import Button from '@mui/material/Button';
+import ButtonGroup from '@mui/material/ButtonGroup';
+import Box from '@mui/material/Box';
 import { marked } from 'marked';
 import { readableFonts } from '../Theme';
-import IconButton from '@material-ui/core/IconButton';
-import PublicIcon from '@material-ui/icons/Public';
-import EditIcon from '@material-ui/icons/Edit';
-import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
-import AddCircleIcon from '@material-ui/icons/AddCircle';
-import { Checkbox, FormControlLabel } from '@material-ui/core';
-
-// import { DateTimePicker } from '@material-ui/pickers/DateTimePicker';
-
+import IconButton from '@mui/material/IconButton';
+import PublicIcon from '@mui/icons-material/Public';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel'
 
 interface TabPanelProps {
     value: number;

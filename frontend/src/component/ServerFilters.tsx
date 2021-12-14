@@ -1,49 +1,40 @@
-import Grid from '@material-ui/core/Grid';
-import Typography from '@material-ui/core/Typography';
-import FormControl from '@material-ui/core/FormControl';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import InputLabel from '@material-ui/core/InputLabel';
-import MenuItem from '@material-ui/core/MenuItem';
-import Paper from '@material-ui/core/Paper';
-import Select from '@material-ui/core/Select';
-import Slider from '@material-ui/core/Slider';
-import Switch from '@material-ui/core/Switch';
-import React, { useEffect } from 'react';
-import makeStyles from '@material-ui/core/styles/makeStyles';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
+import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Paper from '@mui/material/Paper';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import Slider from '@mui/material/Slider';
+import Switch from '@mui/material/Switch';
+import React, { ReactNode, useEffect } from 'react';
 import uniq from 'lodash-es/uniq';
 import { useMapStateCtx } from '../ctx/MapStateCtx';
 import { getDistance } from '../geo';
+import { styled } from '@mui/material/styles';
 
-const useStyles = makeStyles((theme) => ({
-    root: {
-        display: 'flex',
-        padding: theme.spacing(2),
-        marginBottom: theme.spacing(2)
-    },
-    item: {
-        paddingBottom: 0
+const StyledServerFiltersRoot = styled(Paper)(({theme}) => ({
+    display: 'flex',
+    padding: theme.spacing(2),
+    marginBottom: theme.spacing(2)
+}))
 
-    },
-    h1: { textAlign: 'left', fontSize: 20, marginBottom: 0 },
-    h2: { textAlign: 'center', fontSize: 16, marginBottom: 0 },
-    formControl: {
-        margin: theme.spacing(1),
-        minWidth: 120
-    }
-}));
+const StyledRegionSelectFormControl = styled(FormControl)(({theme}) => ({
+    margin: theme.spacing(1),
+    minWidth: 120
+}))
 
 export const ServerFilters = () => {
-    const classes = useStyles();
     const {
         setCustomRange, servers, customRange, pos, setSelectedServers,
         setFilterByRegion, setServers, filterByRegion, selectedRegion, setSelectedRegion,
         setShowOpenOnly, showOpenOnly
     } = useMapStateCtx();
 
-
     const regions = uniq(['any', ...(servers || []).map(value => value.region)]);
 
-    const onRegionsChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    const onRegionsChange = (event: SelectChangeEvent<string[]>, _: ReactNode) => {
         const el = event.target as any;
         setSelectedRegion(el.value);
     };
@@ -127,7 +118,7 @@ export const ServerFilters = () => {
         }
     ];
 
-    return <Paper className={classes.root}>
+    return <StyledServerFiltersRoot>
         <Grid container style={{
             width: '100%',
             flexWrap: 'nowrap',
@@ -144,7 +135,7 @@ export const ServerFilters = () => {
                 />
             </Grid>
             <Grid item xs>
-                <FormControl className={classes.formControl}>
+                <StyledRegionSelectFormControl>
                     <InputLabel id='region-selector-label'>Region</InputLabel>
                     <Select
                         disabled={filterByRegion}
@@ -157,7 +148,7 @@ export const ServerFilters = () => {
                             return <MenuItem key={`region-${r}`} value={r}>{r}</MenuItem>;
                         })}
                     </Select>
-                </FormControl>
+                </StyledRegionSelectFormControl>
             </Grid>
             <Grid item xs>
                 <FormControlLabel
@@ -184,5 +175,5 @@ export const ServerFilters = () => {
                 />
             </Grid>
         </Grid>
-    </Paper>;
+    </StyledServerFiltersRoot>;
 };

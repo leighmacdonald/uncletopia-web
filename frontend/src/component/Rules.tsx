@@ -1,22 +1,21 @@
 import React from 'react';
-import Grid from '@material-ui/core/Grid';
-import Typography from '@material-ui/core/Typography';
-import Paper from '@material-ui/core/Paper';
-import makeStyles from '@material-ui/core/styles/makeStyles';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import { styled } from '@mui/material/styles';
 
-const useStyles = makeStyles((_theme) => ({
-    title: {
-        fontSize: "155%",
-        textAlign: 'center'
-    },
-    body: {
-        fontSize: "1 rem",
-        textAlign: 'center'
-    }
-}));
+
+const StyledTitle = styled(Typography)(({}) => ({
+    fontSize: "155%",
+    textAlign: 'center'
+}))
+
+const StyledBody = styled(Typography)(({}) => ({
+    fontSize: "1 rem",
+    textAlign: 'center'
+}))
 
 export const Rules = () => {
-    const classes = useStyles();
     const rules = [
         ['No random crits', 'No weapon can randomly crit on Uncletopia. This makes for more fair player interaction and encourages skill.'],
         ['No random bullet spread', 'No random bullet spread\n' +
@@ -37,8 +36,8 @@ export const Rules = () => {
         <Grid container spacing={3}>
             <Grid item xs={12}>
                 {rules.map((r, i) => <Paper key={i} style={{  marginBottom: "20px", padding: "1rem"}}>
-                    <Typography className={classes.title} variant={'h6'}>{r[0]}</Typography>
-                    <Typography className={classes.body} variant={'body1'}>{r[1]}</Typography>
+                    <StyledTitle variant={'h6'}>{r[0]}</StyledTitle>
+                    <StyledBody variant={'body1'}>{r[1]}</StyledBody>
                 </Paper>)}
             </Grid>
         </Grid>

@@ -1,32 +1,31 @@
-// How to alias this?
-import { Link as LinkMUI } from '@material-ui/core';
-import Avatar from '@material-ui/core/Avatar';
-import Grid from '@material-ui/core/Grid';
-import Paper from '@material-ui/core/Paper';
-import Toolbar from '@material-ui/core/Toolbar';
-import AppBar from '@material-ui/core/AppBar';
-import IconButton from '@material-ui/core/IconButton';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
-import Button from '@material-ui/core/Button';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import Badge from '@material-ui/core/Badge';
-import Divider from '@material-ui/core/Divider';
-import Typography from '@material-ui/core/Typography';
-import makeStyles from '@material-ui/core/styles/makeStyles';
-import React, { forwardRef, useMemo, useState } from 'react';
-import NotificationsIcon from '@material-ui/icons/Notifications';
-import ExitToAppIcon from '@material-ui/icons/ExitToApp';
-import AccountCircleIcon from '@material-ui/icons/AccountCircle';
-import AnnouncementIcon from '@material-ui/icons/Announcement';
-import SettingsIcon from '@material-ui/icons/Settings';
-import MoreIcon from '@material-ui/icons/More';
-import { Link } from 'react-router-dom';
+import Avatar from '@mui/material/Avatar';
+import Grid from '@mui/material/Grid';
+import Paper from '@mui/material/Paper';
+import Toolbar from '@mui/material/Toolbar';
+import AppBar from '@mui/material/AppBar';
+import IconButton from '@mui/material/IconButton';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import Button from '@mui/material/Button';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Badge from '@mui/material/Badge';
+import Divider from '@mui/material/Divider';
+import Typography from '@mui/material/Typography';
+import React, { useState } from 'react';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import AnnouncementIcon from '@mui/icons-material/Announcement';
+import SettingsIcon from '@mui/icons-material/Settings';
+import MoreIcon from '@mui/icons-material/More';
 import { useCurrentUserCtx } from '../ctx/CurrentUserCtx';
+import { Link as RouterLink } from 'react-router-dom';
 // @ts-ignore
 import SteamLogo from '../images/steam_login_sm.png';
 import { PermissionLevel } from '../api';
+import Link from '@mui/material/Link';
+import { styled } from '@mui/material/styles';
 
 export interface HeaderLink {
     title: string;
@@ -44,52 +43,6 @@ const links: HeaderLink[] = [
     { title: 'Discord', url: '/discord' }
 ];
 
-const useStyles = makeStyles((theme) => ({
-    root: {
-        display: 'flex'
-    },
-    offset: theme.mixins.toolbar,
-    grow: {
-        flexGrow: 1
-    },
-    sectionDesktop: {
-        display: 'none',
-        [theme.breakpoints.up('md')]: {
-            display: 'flex'
-        }
-    },
-    sectionMobile: {
-        display: 'flex',
-        [theme.breakpoints.up('md')]: {
-            display: 'none'
-        }
-    },
-    toolbar: {
-        flexGrow: 1,
-        backgroundColor: theme.palette.background.paper
-    },
-    buttons: {
-        // fontFamily: theme.typography.fontFamily,
-        color: '#fde1c7'
-    }
-}));
-
-//
-// export const withRouter = (Component: any) => {
-//     const Wrapper = (props: any) => {
-//         const history = useHistory();
-//
-//         return (
-//             <Component
-//                 history={history}
-//                 {...props}
-//             />
-//         );
-//     };
-//
-//     return Wrapper;
-// };
-
 export const steamOIDUrl = (): string => {
     // noinspection HttpUrlsUsage
     return `https://steamcommunity.com/openid/login?openid.ns=` + encodeURIComponent('http://specs.openid.net/auth/2.0') +
@@ -101,34 +54,42 @@ export const steamOIDUrl = (): string => {
         '&openid.identity=' + encodeURIComponent('http://specs.openid.net/auth/2.0/identifier_select');
 };
 
-interface GLinkProps {
-    icon?: string | JSX.Element;
-    primary: string;
-    to: string;
-}
+const StyledButton = styled(Button)(({}) => ({
+    color: '#fde1c7'
+}))
 
-export const GLink = ({ primary, to }: GLinkProps): JSX.Element => {
-    const classes = useStyles();
-    const CustomLink = useMemo(() => {
-        const f = forwardRef<HTMLAnchorElement>((linkProps, ref) => (
-            <Link ref={ref} to={to} {...linkProps} />
-        ));
-        f.displayName = 'GLink';
-        return f;
-    }, [to]);
-    return (
-        <Button component={CustomLink} className={classes.buttons}>
-            {primary}
-        </Button>
-    );
-};
+const StyledToolbar = styled(Toolbar)(({theme}) => ({
+    flexGrow: 1,
+    backgroundColor: theme.palette.background.paper
+}))
 
 export function RenderMenuButton(link: HeaderLink) {
-    return <GLink primary={link.title} to={link.url} />;
+    return <Button component={RouterLink} to={link.url} color={'primary'}>{link.title}</Button>;
 }
 
-const TopBar = ({ history }: any): JSX.Element => {
-    const classes = useStyles();
+const Grow = () => <div style={{flexGrow: 1}} />
+
+export interface ChildrenProps {
+    children: React.ReactNode
+}
+
+const Desktop = ({children}: ChildrenProps) =>
+    <div style={{
+        display: 'none',
+        // [theme.breakpoints.up('md')]: {
+        //     display: 'flex'
+        // }
+    }}>{children}</div>
+
+const Mobile = ({children}: ChildrenProps) =>
+    <div style={{
+        display: 'flex',
+        // [theme.breakpoints.up('md')]: {
+        //     display: 'none'
+        // }
+    }}>{children}</div>
+
+const TopBar = (): JSX.Element => {
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [anchorProfileMenuEl, setAnchorProfileMenuEl] =
         useState<Element | null>(null);
@@ -158,8 +119,7 @@ const TopBar = ({ history }: any): JSX.Element => {
 
     const open = Boolean(anchorEl);
 
-    const loadRoute = (route: string) => {
-        history.push(route);
+    const onMenuClick = () => {
         handleProfileMenuClose();
         handleMobileMenuClose();
     };
@@ -169,9 +129,11 @@ const TopBar = ({ history }: any): JSX.Element => {
         route: string,
         icon: JSX.Element
     ) => (
-        <MenuItem onClick={() => loadRoute(route)}>
-            <ListItemIcon>{icon}</ListItemIcon>
-            <ListItemText primary={text} />
+        <MenuItem onClick={onMenuClick}>
+            <Button component={RouterLink} to={route}>
+                <ListItemIcon>{icon}</ListItemIcon>
+                <ListItemText primary={text} />
+            </Button>
         </MenuItem>
     );
     const handleUserMenu = (event: any) => {
@@ -241,31 +203,30 @@ const TopBar = ({ history }: any): JSX.Element => {
     return (
         <>
             <AppBar position='fixed'>
-                <Toolbar variant={'regular'} className={classes.toolbar} disableGutters={false}>
+                <StyledToolbar variant={'regular'}  disableGutters={false}>
                     <Typography variant='h3' color={'primary'} style={{ marginRight: '1rem' }}>
                         Uncletopia
                     </Typography>
                     {links.map(props => <RenderMenuButton key={`m-${props.title}`} {...props} />)}
-                    <div className={classes.grow} />
+                    <Grow />
                     {currentUser.steam_id && currentUser?.steam_profile &&
-                    <Button
+                    <StyledButton
                         aria-label='account of current user'
                         aria-controls='menu-appbar'
                         aria-haspopup='true'
                         onClick={handleUserMenu}
-                        className={classes.buttons}
                     >
                         <Avatar alt={currentUser?.steam_profile?.personaname} src={currentUser?.steam_profile.avatar} />
-                    </Button>
+                    </StyledButton>
                     }
-                    <div className={classes.sectionDesktop}>
+                    <Desktop>
                         {currentUser.steam_id == '' &&
-                        <LinkMUI component={Button} href={steamOIDUrl()}>
+                        <Link component={Button} href={steamOIDUrl()}>
                             <img
                                 src={SteamLogo}
                                 alt={'Steam Login'}
                             />
-                        </LinkMUI>
+                        </Link>
                         }
                         {currentUser.steam_id !== '' && (
                             <Menu
@@ -291,8 +252,8 @@ const TopBar = ({ history }: any): JSX.Element => {
                                     <AnnouncementIcon color={'secondary'} />)}
                                 {renderLinkedMenuItem('Logout', '/logout', <ExitToAppIcon color={'secondary'} />)}
                             </Menu>)}
-                    </div>
-                    <div className={classes.sectionMobile}>
+                    </Desktop>
+                    <Mobile>
                         <IconButton
                             aria-label='show more'
                             aria-controls={mobileMenuId}
@@ -302,10 +263,9 @@ const TopBar = ({ history }: any): JSX.Element => {
                         >
                             <MoreIcon />
                         </IconButton>
-                    </div>
-                </Toolbar>
+                    </Mobile>
+                </StyledToolbar>
             </AppBar>
-            <div className={classes.offset} />
             {renderMobileMenu}
             {renderProfileMenu}
         </>
@@ -314,7 +274,7 @@ const TopBar = ({ history }: any): JSX.Element => {
 
 export const Header = () => {
     return (
-        <Paper style={{ marginBottom: '2rem' }}>
+        <Paper style={{ marginBottom: '6rem' }}>
             <Grid container>
                 <Grid item md={12}>
                     <TopBar />

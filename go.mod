@@ -8,7 +8,7 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-playground/validator/v10 v10.9.0 // indirect
-	github.com/gomarkdown/markdown v0.0.0-20211203165214-0d698b49fbb4
+	github.com/gomarkdown/markdown v0.0.0-20211207152620-5d6539fd8bfc
 	github.com/jackc/pgconn v1.10.1
 	github.com/jackc/pgerrcode v0.0.0-20201024163028-a0d42d470451
 	github.com/jackc/pgx/v4 v4.14.1
@@ -33,9 +33,9 @@ require (
 	github.com/yohcop/openid-go v1.0.0
 	golang.org/dl v0.0.0-20190829154251-82a15e2f2ead // indirect
 	golang.org/x/crypto v0.0.0-20211202192323-5770296d904e // indirect
-	golang.org/x/net v0.0.0-20211203184738-4852103109b8 // indirect
+	golang.org/x/net v0.0.0-20211207213349-853792941377 // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
-	golang.org/x/sys v0.0.0-20211124211545-fe61309f8881 // indirect
+	golang.org/x/sys v0.0.0-20211205182925-97ca703d548d // indirect
 	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/ini.v1 v1.66.2 // indirect
 	gopkg.in/mxpv/patreon-go.v1 v1.0.0-20171031001022-1d2f253ac700

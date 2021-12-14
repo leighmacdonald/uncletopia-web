@@ -1,9 +1,8 @@
 import React from 'react';
-import Alert from '@material-ui/lab/Alert';
-import { Color } from '@material-ui/lab/Alert/Alert';
+import Alert, { AlertColor } from '@mui/lab/Alert';
 
 export interface Flash {
-    level: Color;
+    level: AlertColor;
     heading: string;
     message: string;
     closable?: boolean;

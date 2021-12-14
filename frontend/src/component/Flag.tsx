@@ -1,5 +1,5 @@
 import React from 'react';
-import Box from '@material-ui/core/Box';
+import Box from '@mui/material/Box';
 
 const br = <svg xmlns='http://www.w3.org/2000/svg' id='flag-icon-css-br' viewBox='0 0 640 480'>
     <g strokeWidth='1pt'>

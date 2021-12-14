@@ -1,4 +1,5 @@
-import createTheme from '@material-ui/core/styles/createTheme';
+import createTheme from '@mui/material/styles/createTheme';
+import darkScrollbar from '@mui/material/darkScrollbar';
 
 export const readableFonts =  {fontFamily: [
     '"Helvetica Neue"',
@@ -9,6 +10,13 @@ export const readableFonts =  {fontFamily: [
 ].join(',')}
 
 export const tf2theme = createTheme({
+    components: {
+        MuiCssBaseline: {
+            styleOverrides: {
+                body: darkScrollbar(),
+            },
+        },
+    },
     typography: {
         fontFamily: [
             '"TF2 Build"',
@@ -32,6 +40,7 @@ export const tf2theme = createTheme({
     },
     spacing: 6,
     palette: {
+        mode: 'dark',
         background: {
             paper: 'rgb(20, 13, 10)',
             default: 'rgb(38,24,18)'

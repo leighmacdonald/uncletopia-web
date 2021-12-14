@@ -1,9 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import Button from '@material-ui/core/Button';
-import Grid from '@material-ui/core/Grid';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
-import makeStyles from '@material-ui/core/styles/makeStyles';
+import Button from '@mui/material/Button';
+import Grid from '@mui/material/Grid';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
 import { fetchServers, Server } from '../api';
 // @ts-ignore
 //import * as x from 'leaflet/dist/leaflet.css';
@@ -12,13 +11,19 @@ import { LatLngLiteral } from 'leaflet';
 import { MapStateCtx, useMapStateCtx } from '../ctx/MapStateCtx';
 import { ServerQueue } from './ServerQueue';
 import { ServerFilters } from './ServerFilters';
-import Link from '@material-ui/core/Link';
-import CheckIcon from '@material-ui/icons/Check';
+import CheckIcon from '@mui/icons-material/Check';
 import { Flag } from './Flag';
-import { ButtonGroup, Card, CardContent, LinearProgress, LinearProgressProps } from '@material-ui/core';
+import ButtonGroup from '@mui/material/ButtonGroup';
+import Card  from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import LinearProgress, { LinearProgressProps } from '@mui/material/LinearProgress';
+import { styled } from '@mui/material/styles';
 import sum from 'lodash-es/sum';
-import Box from '@material-ui/core/Box';
+import Box from '@mui/material/Box';
 import { getDistance } from '../geo';
+import Link from '@mui/material/Link';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import IconButton from '@mui/material/IconButton';
 
 interface ServerRowProps {
     server: Server;
@@ -26,103 +31,101 @@ interface ServerRowProps {
     showDetails: boolean;
 }
 
-const useStyles = makeStyles((theme) => ({
-    root: {
-        display: 'flex',
-        padding: theme.spacing(1),
-        marginBottom: theme.spacing(1),
-        paddingBottom: theme.spacing(1),
-        paddingRight: theme.spacing(0)
-    },
-    item: {
-        // paddingBottom: 0
-
-    },
-    h1: { textAlign: 'left', fontSize: 20, marginBottom: 0 },
-    h2: { textAlign: 'center', fontSize: 16, marginBottom: 0 },
-    flag: {
-        maxHeight: '20px',
-        width: '40px',
-        verticalAlign: 'middle',
-        paddingRight: theme.spacing(0),
-        display: 'inline-block'
-    },
-    rowBody: {
-        width: '100%',
-        height: '24px',
-        flexWrap: 'nowrap',
-        alignItems: 'center'
-        // justifyContent: 'center'
-    },
-    stats: {
-        width: '100%',
-        flexWrap: 'nowrap',
-        alignItems: 'center'
-        // justifyContent: 'center'
-    },
-    statsText: {
-        textAlign: 'center', fontSize: 20, marginBottom: 0
-    },
-    button: {
-        backgroundColor: 'rgb(44,91,17)',
-        width: '100%',
-        height: '100%',
-        '&:hover': {
-            backgroundColor: 'rgb(74,154,28)'
-        }
-    }
+const StyledServerRow = styled(Paper)(({ theme }) => ({
+    display: 'flex',
+    padding: theme.spacing(2),
+    marginBottom: theme.spacing(1),
+    paddingBottom: theme.spacing(1),
+    paddingRight: theme.spacing(0),
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0
 }));
 
+const StyledServerRowGrid = styled(Grid)(({}) => ({
+    width: '100%',
+    height: '24px',
+    flexWrap: 'nowrap',
+    alignItems: 'center'
+}));
+
+const StyledServerGridCol = styled(Grid)(({}) => ({}));
+
+const StyledServerNameText = styled(Typography)(({}) => ({
+    textAlign: 'left',
+    fontSize: 20,
+    marginBottom: 0,
+    display: 'inline-block',
+    paddingLeft: '10px'
+}));
+
+const StyledServerDetailText = styled(Typography)(({}) => ({
+    textAlign: 'center',
+    fontSize: 16,
+    marginBottom: 0
+}));
+
+// const StyledServerLink = styled(Button, {})(({}) => ({
+//     backgroundColor: 'rgb(44,91,17)',
+//     width: '100%',
+//     height: '100%',
+//     '&:hover': {
+//         backgroundColor: 'rgb(74,154,28)'
+//     }
+// }));
+
 const ServerRow = ({ server }: ServerRowProps) => {
-    const classes = useStyles();
     const [copied, setCopied] = useState<boolean>(false);
     const players = server?.a2s?.Players || 0;
     const maxPlayers = server?.a2s?.MaxPlayers || 32;
-    const [showPlayers, setShowPlayers ] = useState<boolean>(false);
-    return <Paper className={classes.root} style={{ borderTopLeftRadius: 0, borderTopRightRadius: 0 }} onClick={() => {
-        setShowPlayers(!showPlayers)
+    const [showPlayers, setShowPlayers] = useState<boolean>(false);
+    return <StyledServerRow onClick={() => {
+        setShowPlayers(!showPlayers);
     }}>
-        <Grid container className={classes.rowBody}>
+        <StyledServerRowGrid container>
             {/*<Grid item md={1} sm={false} className={classes.item}>*/}
             {/*    <Flag countryCode={server.cc} />*/}
             {/*</Grid>*/}
-            <Grid item md={5} sm={12} className={classes.item}>
+            <StyledServerGridCol item md={5} sm={12}>
                 <Flag countryCode={server.cc} />
-                <Typography variant={'h1'} className={classes.h1} gutterBottom={false} style={
-                    {display: 'inline-block', paddingLeft: "10px"}}>
+                <StyledServerNameText variant={'h1'} gutterBottom={false}>
                     {server.name_long}
-                </Typography>
+                </StyledServerNameText>
                 {/*<Button onClick={onClick}>Players</Button>*/}
-            </Grid>
-            <Grid item md={2} className={classes.item}>
-                <Typography variant={'h2'} className={classes.h2}
-                            gutterBottom={false}>{server.a2s?.Map || ''}</Typography>
-            </Grid>
-            <Grid item md={2} className={classes.item}>
-                <Typography variant={'h2'}
-                            className={classes.h2}
-                            gutterBottom={false}>{Math.min(players, maxPlayers)} / {maxPlayers}</Typography>
-            </Grid>
-            <Grid item md={3} className={classes.item}>
+            </StyledServerGridCol>
+            <StyledServerGridCol item md={2}>
+                <StyledServerDetailText variant={'h2'}
+                            gutterBottom={false}>{server.a2s?.Map || ''}</StyledServerDetailText>
+            </StyledServerGridCol>
+            <StyledServerGridCol item md={2}>
+                <StyledServerDetailText variant={'h2'}
+                            gutterBottom={false}>{Math.min(players, maxPlayers)} / {maxPlayers}</StyledServerDetailText>
+            </StyledServerGridCol>
+            <StyledServerGridCol item md={3}>
                 <ButtonGroup fullWidth>
-                    <Button className={classes.button} onClick={() => {
+                    <IconButton component={"span"} title={"Copy to clipboard"} onClick={() => {
                         navigator.clipboard.writeText(`connect ${server.host}:${server.port}`).then(() => {
                                 setCopied(true), () => setCopied(false);
                             }
                         );
                     }
-                    }>Copy {copied && <CheckIcon />}</Button>
-                    <Link component={Button} href={`steam://connect/${server.host}:${server.port}`} color={'inherit'}
-                          style={{ textDecoration: 'none' }}
-                          className={classes.button}>Connect</Link>
+                    }>
+                        {copied ? <CheckIcon /> : <ContentCopyIcon />}
+                    </IconButton>
+                    <Button
+                        component={Link}
+                        href={`steam://connect/${server.host}:${server.port}`}
+                        color={'primary'}
+                        variant="contained"
+                        style={{ textDecoration: 'none' }}
+                    >Connect</Button>
                 </ButtonGroup>
 
-            </Grid>
+            </StyledServerGridCol>
             {/*{showDetails && <Grid item xs={12}>*/}
             {/*    <Typography variant={'h2'}>Selected</Typography>*/}
             {/*</Grid>}*/}
-        </Grid>
-    </Paper>;
+        </StyledServerRowGrid>
+    </StyledServerRow>;
 };
 
 function LinearProgressWithLabel(props: LinearProgressProps & { value: number }) {
@@ -138,8 +141,13 @@ function LinearProgressWithLabel(props: LinearProgressProps & { value: number })
     );
 }
 
+const StatsText = styled(Typography)(({}) => ({
+    textAlign: 'center',
+    fontSize: 20,
+    marginBottom: 0
+}));
+
 export const ServerStats = () => {
-    const classes = useStyles();
     const { servers } = useMapStateCtx();
     const cap = servers.length * 24;
     const use = sum(servers.map(value => value?.a2s?.Players || 0));
@@ -151,25 +159,25 @@ export const ServerStats = () => {
         acc[cv.region].push(cv);
         return acc;
     }, {} as Record<string, Server[]>);
-    const keys = Object.keys(regions)
-    keys.sort()
-    return <Paper style={{ marginBottom: '1rem', marginTop: "1rem" }}>
+    const keys = Object.keys(regions);
+    keys.sort();
+    return <Paper style={{ marginBottom: '1rem', marginTop: '1rem' }}>
         <Grid container justifyContent='center' spacing={3}>
             <Grid item xs>
-                <Grid container spacing={3} style={{paddingLeft: "10px"}}>
+                <Grid container spacing={3} style={{ paddingLeft: '10px' }}>
                     <Grid item xs={3}>
-                        <Typography className={classes.statsText} style={{ display: 'inline' }}
-                                    variant={'subtitle1'}
-                                    align={'center'}>Global: {use} / {cap}</Typography>
+                        <StatsText style={{ display: 'inline' }}
+                                   variant={'subtitle1'}
+                                   align={'center'}>Global: {use} / {cap}</StatsText>
                         <LinearProgressWithLabel value={Math.round((use / cap) * 100)} />
                     </Grid>
                     {keys.map((v) => {
                         const pSum = sum((regions.hasOwnProperty(v) && regions[v] || []).map((value => value?.a2s?.Players || 0)));
                         const pMax = sum((regions.hasOwnProperty(v) && regions[v] || []).map((value => value?.a2s?.MaxPlayers || 24)));
                         return <Grid item xs={3} key={`stat-${v}`}>
-                            <Typography className={classes.statsText} style={{ display: 'inline' }}
-                                        variant={'subtitle1'}
-                                        align={'center'}>{v}: {pSum} / {pMax}</Typography>
+                            <StatsText style={{ display: 'inline' }}
+                                       variant={'subtitle1'}
+                                       align={'center'}>{v}: {pSum} / {pMax}</StatsText>
                             <LinearProgressWithLabel value={Math.round((pSum / pMax) * 100)} />
                         </Grid>;
                     })}
@@ -182,7 +190,7 @@ export const ServerStats = () => {
 
 export const ServerList = () => {
     const { selectedServers, pos } = useMapStateCtx();
-    const [selectedRow, setSelectedRow] = useState<string>("")
+    const [selectedRow, setSelectedRow] = useState<string>('');
     if (selectedServers.length === 0) {
         return <Grid container>
             <Grid item xs={12}>
@@ -192,41 +200,43 @@ export const ServerList = () => {
     }
     return <Grid container>
         <Grid item xs={12}>
-            {(selectedServers || []).
-            map(srv => {
-                return {...srv, "distance": getDistance(pos, { lat: srv.latitude, lng: srv.longitude })}
-            }).
-            sort((a, b) => {
+            {(selectedServers || []).map(srv => {
+                return { ...srv, 'distance': getDistance(pos, { lat: srv.latitude, lng: srv.longitude }) };
+            }).sort((a, b) => {
                 // Sort by position if we have a non-default position.
                 // otherwise sort by server name
                 if (pos.lat !== 42.434719) {
-                    if (a.distance > b.distance) { return 1; }
-                    if (a.distance < b.distance) { return -1; }
+                    if (a.distance > b.distance) {
+                        return 1;
+                    }
+                    if (a.distance < b.distance) {
+                        return -1;
+                    }
                     return 0;
                 }
-                return ('' + a.name_short).localeCompare(b.name_short)
-            }).
-            map(server => <ServerRow showDetails={selectedRow == server.name_short} onClick={() => {
-                setSelectedRow(server.name_short)
+                return ('' + a.name_short).localeCompare(b.name_short);
+            }).map(server => <ServerRow showDetails={selectedRow == server.name_short} onClick={() => {
+                setSelectedRow(server.name_short);
             }} key={`server-${server.host}-${server.port}`}
-                                                              server={server} />)}
+                                        server={server} />)}
         </Grid>
     </Grid>;
 };
 
 export default function ServerNotice() {
     return (
-        <Card style={{marginBottom: "0.5rem"}}>
+        <Card style={{ marginBottom: '0.5rem' }}>
             <CardContent>
-                <Typography color="textSecondary" variant={'h6'}>Singapore Notice</Typography>
-                <Typography color="textSecondary" variant={'body1'}>
+                <Typography color='textSecondary' variant={'h6'}>Singapore Notice</Typography>
+                <Typography color='textSecondary' variant={'body1'}>
                     Singapore servers are currently experiencing on-going issues with upstream filtering. The servers
                     are in fact alive, but some users may have trouble connecting using the website or server browser.
-                    You can still connect manually via console by using the copy button and pasting it into your TF2 console.
+                    You can still connect manually via console by using the copy button and pasting it into your TF2
+                    console.
                 </Typography>
             </CardContent>
         </Card>
-    )
+    );
 }
 
 export const Servers = () => {
@@ -240,18 +250,18 @@ export const Servers = () => {
 
     const loadServers = useCallback(async () => {
         try {
-            const s = (await fetchServers() || [])
+            const s = (await fetchServers() || []);
             setServers(s);
             setSelectedServers(s);
         } catch (e) {
-            console.log(`Failed to load servers: ${e}`)
+            console.log(`Failed to load servers: ${e}`);
         }
     }, [pos, setServers, setSelectedServers]);
 
     // Sort by distance once we get a position
     useEffect(() => {
-        setServers(servers)
-    }, [pos])
+        setServers(servers);
+    }, [pos]);
 
     useEffect(() => {
         // noinspection JSIgnoredPromiseFromCall

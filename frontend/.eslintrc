@@ -9,12 +9,7 @@
   "settings": {
     "react": {
       "version": "17"
-    }
-    //    "linkComponents": [
-    //      // Components used as alternatives to <a> for linking, eg. <Link to={ url } />
-    //      "Hyperlink",
-    //      {"name": "Link", "linkAttribute": "to"}
-    //    ]
+    },
   },
   "plugins": [
     "prettier",
@@ -40,7 +35,7 @@
     "no-restricted-imports": [
       "error",
       {
-        "patterns": ["@material-ui/*/*/*", "!@material-ui/core/test-utils/*"]
+        "patterns": ["@mui/*/*/*", "!@mui/material/test-utils/*"]
       }
     ]
   }

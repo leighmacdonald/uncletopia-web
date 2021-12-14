@@ -1,16 +1,16 @@
-const path = require('path');
-const CopyPlugin = require('copy-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-// const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+import * as path from 'path';
+import * as webpack from 'webpack';
+import HtmlWebpackPlugin from 'html-webpack-plugin';
+import MiniCssExtractPlugin from 'mini-css-extract-plugin';
+import CopyPlugin from 'copy-webpack-plugin';
 
-const devMode = process.env.NODE_ENV !== 'production';
+const debugMode = process.env['NODE_ENV'] !== 'production';
 const paths = {
     src: path.join(__dirname, 'src'),
     dist: path.join(__dirname, 'dist')
 };
 
-module.exports = {
+const config: webpack.Configuration = {
     entry: {
         main: [
             'babel-polyfill',
@@ -20,7 +20,7 @@ module.exports = {
     output: {
         path: path.join(__dirname, '/dist/static'),
         publicPath: '/static/',
-        filename: devMode ? '[name].js' : '[name].[chunkhash:8].bundle.js',
+        filename: debugMode ? '[name].js' : '[name].[chunkhash:8].bundle.js',
         clean: true
     },
     optimization: {
@@ -48,7 +48,7 @@ module.exports = {
             }
         }
     },
-    devtool: devMode ? 'inline-source-map' : false,
+    devtool: debugMode ? 'inline-source-map' : false,
     resolve: {
         extensions: ['.tsx', '.ts', '.js']
     },
@@ -120,11 +120,13 @@ module.exports = {
             inject: true,
             hash: false,
             minify: {
-                removeComments: !devMode,
-                collapseWhitespace: !devMode,
-                minifyJS: !devMode,
-                minifyCSS: !devMode
+                removeComments: !debugMode,
+                collapseWhitespace: !debugMode,
+                minifyJS: !debugMode,
+                minifyCSS: !debugMode
             }
         })
     ]
 };
+
+export default config;

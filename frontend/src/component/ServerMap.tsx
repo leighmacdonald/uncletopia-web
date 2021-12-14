@@ -1,11 +1,9 @@
-import { Grid } from '@material-ui/core';
+import Grid from '@mui/material/Grid';
 import React, { useEffect, useMemo } from 'react';
-import { MapContainer, useMap } from 'react-leaflet';
-import { Marker } from 'react-leaflet';
-import { Circle } from 'react-leaflet';
-import { TileLayer } from 'react-leaflet';
+import { MapContainer, useMap, Marker, Circle, TileLayer } from 'react-leaflet';
 import { useMapStateCtx } from '../ctx/MapStateCtx';
 import { getDistance } from '../geo';
+import "leaflet/dist/leaflet.css";
 
 const UserPosition = () => {
     const map = useMap();

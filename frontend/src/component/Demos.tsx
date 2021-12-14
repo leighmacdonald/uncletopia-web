@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import Grid from '@material-ui/core/Grid';
+import Grid from '@mui/material/Grid';
 import { DemoArchive, getDemos } from '../api';
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 
 
 

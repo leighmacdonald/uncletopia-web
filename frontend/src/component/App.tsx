@@ -1,6 +1,5 @@
-import CssBaseline from '@material-ui/core/CssBaseline';
-import Container from '@material-ui/core/Container';
-import ThemeProvider from '@material-ui/styles/ThemeProvider';
+import CssBaseline from '@mui/material/CssBaseline';
+import Container from '@mui/material/Container';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import {
@@ -24,9 +23,10 @@ import { Maps } from './Maps';
 import { Rules } from './Rules';
 import { DiscordLink } from './Discord';
 import { AdminNews } from './AdminNews';
-import MuiPickersUtilsProvider from '@material-ui/pickers/MuiPickersUtilsProvider';
 import DateFnsUtils from '@date-io/date-fns';
 import { Demos } from './Demos';
+import { ThemeProvider } from '@mui/material';
+import { LocalizationProvider } from '@mui/lab';
 
 export const App = () => {
     const [currentUser, setCurrentUser] = useState<NonNullable<Person>>(GuestProfile);
@@ -47,46 +47,48 @@ export const App = () => {
 
     return (
         <CurrentUserCtx.Provider value={{ currentUser, setCurrentUser }}>
-            <MuiPickersUtilsProvider utils={DateFnsUtils}>
+            <LocalizationProvider dateAdapter={DateFnsUtils}>
                 <Router>
                     <React.Fragment>
                         <ThemeProvider theme={tf2theme}>
-                            <Container>
-                                <CssBaseline />
-                                <Header />
-                                <UserFlashCtx.Provider value={{ flashes, setFlashes }}>
-                                    <Flashes flashes={flashes} />
-                                </UserFlashCtx.Provider>
-                                <Container maxWidth='lg'>
-                                    <Routes>
-                                        <Route path='/' element={<Home />} />
-                                        <Route path='/servers' element={<Servers />} />
-                                        <Route path='/maps' element={<Maps />} />
-                                        <Route path='/demos' element={<Demos />} />
-                                        <Route path='/rules' element={<Rules />} />
-                                        <Route path='/donate' element={<Donate />} />
-                                        <Route path='/discord' element={<DiscordLink />} />
-                                        <Route path='/profile' element={<UserProfile />} />
-                                        <Route
-                                            path={'/login/success'}
-                                            element={<LoginSuccess />}
-                                        />
-                                        <Route
-                                            path={'/logout'}
-                                            element={<Logout />}
-                                        />
-                                        <Route
-                                            path={'/admin/news'}
-                                            element={<AdminNews />}
-                                        />
-                                    </Routes>
-                                    <Footer />
+                            <React.StrictMode>
+                                <Container>
+                                    <CssBaseline />
+                                    <Header />
+                                    <UserFlashCtx.Provider value={{ flashes, setFlashes }}>
+                                        <Flashes flashes={flashes} />
+                                    </UserFlashCtx.Provider>
+                                    <Container maxWidth='lg'>
+                                        <Routes>
+                                            <Route path='/' element={<Home />} />
+                                            <Route path='/servers' element={<Servers />} />
+                                            <Route path='/maps' element={<Maps />} />
+                                            <Route path='/demos' element={<Demos />} />
+                                            <Route path='/rules' element={<Rules />} />
+                                            <Route path='/donate' element={<Donate />} />
+                                            <Route path='/discord' element={<DiscordLink />} />
+                                            <Route path='/profile' element={<UserProfile />} />
+                                            <Route
+                                                path={'/login/success'}
+                                                element={<LoginSuccess />}
+                                            />
+                                            <Route
+                                                path={'/logout'}
+                                                element={<Logout />}
+                                            />
+                                            <Route
+                                                path={'/admin/news'}
+                                                element={<AdminNews />}
+                                            />
+                                        </Routes>
+                                        <Footer />
+                                    </Container>
                                 </Container>
-                            </Container>
+                            </React.StrictMode>
                         </ThemeProvider>
                     </React.Fragment>
                 </Router>
-            </MuiPickersUtilsProvider>
+            </LocalizationProvider>
         </CurrentUserCtx.Provider>
     );
 };

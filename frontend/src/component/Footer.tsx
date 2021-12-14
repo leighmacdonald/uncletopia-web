@@ -1,34 +1,27 @@
 import React from 'react';
-import Container from '@material-ui/core/Container';
-import Typography from '@material-ui/core/Typography';
-import Link from '@material-ui/core/Link';
-import makeStyles from '@material-ui/core/styles/makeStyles';
+import Container from '@mui/material/Container';
+import { styled } from '@mui/material/styles';
+import Button from '@mui/material/Button';
+import Link from '@mui/material/Link';
+
 
 function Copyright() {
     return (
-        <Typography variant='body2' color='textSecondary' align='center'>
-            <Link color='inherit' href='https://uncletopia.com/'>
-                &copy; Copyright Uncletopia
-            </Link>{' '}
-            {new Date().getFullYear()}
-        </Typography>
+        <Button component={Link} color='inherit' href={'https://github.com/leighmacdonald/uncletopia-web'}>
+            &copy; 2020 - {new Date().getFullYear()} Uncletopia
+        </Button>
     );
 }
 
-const useStyles = makeStyles((theme) => ({
-    footer: {
-        marginTop: theme.spacing(3),
-        padding: theme.spacing(6, 0)
-    }
-}));
+const StyledFooter = styled(Container)(({theme}) => ({
+    marginTop: theme.spacing(3),
+    padding: theme.spacing(6, 0)
+}))
 
 export const Footer = () => {
-    const classes = useStyles();
     return (
-        <footer className={classes.footer}>
-            <Container maxWidth='lg'>
-                <Copyright />
-            </Container>
-        </footer>
+        <StyledFooter maxWidth='lg'>
+            <Copyright />
+        </StyledFooter>
     );
 }
