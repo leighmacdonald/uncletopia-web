@@ -95,7 +95,7 @@ export const DonationPanel = () => {
             try {
                 const s = await fetchServers();
                 setServers(sortedUniq(s.map(value => {
-                    const va = value.name_short.split('-');
+                    const va = value.server_name.split('-');
                     if (va.length > 0) {
                         return va[0] as string;
                     }

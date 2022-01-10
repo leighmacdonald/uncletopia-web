@@ -14,7 +14,7 @@ import { ServerFilters } from './ServerFilters';
 import CheckIcon from '@mui/icons-material/Check';
 import { Flag } from './Flag';
 import ButtonGroup from '@mui/material/ButtonGroup';
-import Card  from '@mui/material/Card';
+import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import LinearProgress, { LinearProgressProps } from '@mui/material/LinearProgress';
 import { styled } from '@mui/material/styles';
@@ -75,8 +75,8 @@ const StyledServerDetailText = styled(Typography)(({}) => ({
 
 const ServerRow = ({ server }: ServerRowProps) => {
     const [copied, setCopied] = useState<boolean>(false);
-    const players = server?.a2s?.Players || 0;
-    const maxPlayers = server?.a2s?.MaxPlayers || 32;
+    const players = server?.players.length || 0;
+    const maxPlayers = server?.players_max || 32;
     const [showPlayers, setShowPlayers] = useState<boolean>(false);
     return <StyledServerRow onClick={() => {
         setShowPlayers(!showPlayers);
@@ -88,22 +88,22 @@ const ServerRow = ({ server }: ServerRowProps) => {
             <StyledServerGridCol item md={5} sm={12}>
                 <Flag countryCode={server.cc} />
                 <StyledServerNameText variant={'h1'} gutterBottom={false}>
-                    {server.name_long}
+                    {server.server_name_long}
                 </StyledServerNameText>
                 {/*<Button onClick={onClick}>Players</Button>*/}
             </StyledServerGridCol>
             <StyledServerGridCol item md={2}>
                 <StyledServerDetailText variant={'h2'}
-                            gutterBottom={false}>{server.a2s?.Map || ''}</StyledServerDetailText>
+                                        gutterBottom={false}>{server.current_map || ''}</StyledServerDetailText>
             </StyledServerGridCol>
             <StyledServerGridCol item md={2}>
                 <StyledServerDetailText variant={'h2'}
-                            gutterBottom={false}>{Math.min(players, maxPlayers)} / {maxPlayers}</StyledServerDetailText>
+                                        gutterBottom={false}>{Math.min(players, maxPlayers)} / {maxPlayers}</StyledServerDetailText>
             </StyledServerGridCol>
             <StyledServerGridCol item md={3}>
                 <ButtonGroup fullWidth>
-                    <IconButton component={"span"} title={"Copy to clipboard"} onClick={() => {
-                        navigator.clipboard.writeText(`connect ${server.host}:${server.port}`).then(() => {
+                    <IconButton component={'span'} title={'Copy to clipboard'} onClick={() => {
+                        navigator.clipboard.writeText(`connect ${server.address}:${server.port}`).then(() => {
                                 setCopied(true), () => setCopied(false);
                             }
                         );
@@ -113,9 +113,9 @@ const ServerRow = ({ server }: ServerRowProps) => {
                     </IconButton>
                     <Button
                         component={Link}
-                        href={`steam://connect/${server.host}:${server.port}`}
+                        href={`steam://connect/${server.address}:${server.port}`}
                         color={'primary'}
-                        variant="contained"
+                        variant='contained'
                         style={{ textDecoration: 'none' }}
                     >Connect</Button>
                 </ButtonGroup>
@@ -150,7 +150,7 @@ const StatsText = styled(Typography)(({}) => ({
 export const ServerStats = () => {
     const { servers } = useMapStateCtx();
     const cap = servers.length * 24;
-    const use = sum(servers.map(value => value?.a2s?.Players || 0));
+    const use = sum(servers.map(value => value?.players.length || 0));
     const regions = servers.reduce((acc, cv) => {
         if (!acc.hasOwnProperty(cv.region)) {
             acc[cv.region] = [];
@@ -172,8 +172,8 @@ export const ServerStats = () => {
                         <LinearProgressWithLabel value={Math.round((use / cap) * 100)} />
                     </Grid>
                     {keys.map((v) => {
-                        const pSum = sum((regions.hasOwnProperty(v) && regions[v] || []).map((value => value?.a2s?.Players || 0)));
-                        const pMax = sum((regions.hasOwnProperty(v) && regions[v] || []).map((value => value?.a2s?.MaxPlayers || 24)));
+                        const pSum = sum((regions.hasOwnProperty(v) && regions[v] || []).map((value => value?.players.length || 0)));
+                        const pMax = sum((regions.hasOwnProperty(v) && regions[v] || []).map((value => value?.players_max || 24)));
                         return <Grid item xs={3} key={`stat-${v}`}>
                             <StatsText style={{ display: 'inline' }}
                                        variant={'subtitle1'}
@@ -214,10 +214,10 @@ export const ServerList = () => {
                     }
                     return 0;
                 }
-                return ('' + a.name_short).localeCompare(b.name_short);
-            }).map(server => <ServerRow showDetails={selectedRow == server.name_short} onClick={() => {
-                setSelectedRow(server.name_short);
-            }} key={`server-${server.host}-${server.port}`}
+                return ('' + a.server_name).localeCompare(b.server_name);
+            }).map(server => <ServerRow showDetails={selectedRow == server.server_name} onClick={() => {
+                setSelectedRow(server.server_name);
+            }} key={`server-${server.address}-${server.port}`}
                                         server={server} />)}
         </Grid>
     </Grid>;

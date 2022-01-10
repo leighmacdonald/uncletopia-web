@@ -87,7 +87,7 @@ export const ServerFilters = () => {
             s = s.filter(srv => selectedRegion.includes(srv.region));
         }
         if (showOpenOnly) {
-            s = s.filter(srv => (srv?.a2s?.Players || 0) < (srv?.a2s?.MaxPlayers || 32));
+            s = s.filter(srv => (srv?.players.length || 0) < (srv?.players_max || 32));
         }
         if (filterByRegion && customRange) {
             s = s.filter(srv =>

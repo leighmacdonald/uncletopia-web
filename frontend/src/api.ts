@@ -100,29 +100,34 @@ export interface Person {
     friends: Person[];
 }
 
-export interface ServerState {
-    Name: string;
-    Players: number;
-    MaxPlayers: number;
-    Version: string;
-    Map: string;
+export interface playerInfo {
+    steamid: string;
+    name: string;
+    user_id: string;
+    connected_secs: number;
 }
 
 export interface Server {
     server_id: number;
-    name_short: string;
-    name_long: string;
-    host: string;
+    server_name: string;
+    server_name_long: string;
+    address: string;
     port: number;
-    password_required: boolean;
+    password_protected: boolean;
+    vac: boolean;
     region: string;
-    is_enabled: boolean;
     cc: string;
     latitude: number;
     longitude: number;
-    last_has_players: Date;
-    a2s: ServerState;
     distance: number;
+    current_map: string;
+    default_map: string;
+    tags: string[];
+    reserved_slots: number;
+    created_on: Date;
+    updated_on: Date;
+    players_max: number;
+    players: playerInfo[];
 }
 
 export interface News {

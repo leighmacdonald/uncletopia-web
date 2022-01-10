@@ -1,6 +1,6 @@
 // +build patreon
 
-package donation
+package app
 
 import (
 	"github.com/leighmacdonald/golib"

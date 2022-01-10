@@ -58,11 +58,6 @@ var seedCmd = &cobra.Command{
 		if errDecode := json.Unmarshal(b, &seedData); errDecode != nil {
 			log.Fatalf("Failed to decode seed file: %v", errDecode)
 		}
-		for _, server := range seedData.Servers {
-			if errAdd := s.ServerSave(context.Background(), &server); err != nil {
-				log.Fatalf("Error adding seed server (%s): %v", server.NameShort, errAdd)
-			}
-		}
 
 		for _, p := range seedData.Person {
 			np := store.NewPerson(p.SteamID)

@@ -14,13 +14,6 @@ type StorageInterface interface {
 	// Should only be used for special cases.
 	Exec(ctx context.Context, raw string, args ...interface{}) error
 
-	// ServerSave inserts or updates the server instance depending if it has a server_id > 0
-	ServerSave(ctx context.Context, server *Server) error
-	// ServerDelete fully drops the server from the system. There is no soft-deletion yet
-	ServerDelete(ctx context.Context, server *Server) error
-	// Servers provides all the servers tracked
-	Servers(ctx context.Context) (ServerCollection, error)
-
 	// Donations returns all donations
 	Donations(ctx context.Context) ([]Donation, error)
 

@@ -1,4 +1,4 @@
-package web
+package app
 
 import (
 	"bytes"
@@ -10,21 +10,16 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/html"
-	"github.com/leighmacdonald/steamid/v2/extra"
 	"github.com/leighmacdonald/steamid/v2/steamid"
 	"github.com/leighmacdonald/steamweb"
 	"github.com/leighmacdonald/uncletopia-web/internal/config"
-	"github.com/leighmacdonald/uncletopia-web/internal/donation"
-	"github.com/leighmacdonald/uncletopia-web/internal/servers"
 	"github.com/leighmacdonald/uncletopia-web/internal/store"
 	"github.com/leighmacdonald/uncletopia-web/pkg/coordinator"
 	"github.com/pkg/errors"
-	"github.com/rumblefrog/go-a2s"
 	log "github.com/sirupsen/logrus"
 	"github.com/yohcop/openid-go"
 	"io"
 	"io/ioutil"
-	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
@@ -37,13 +32,13 @@ import (
 
 type M map[string]interface{}
 
-type App struct {
+type Web struct {
 	router *gin.Engine
 	srv    *http.Server
 	ctx    context.Context
 }
 
-func New(db store.StorageInterface, coord *coordinator.Coordinator) (http.Handler, error) {
+func NewWeb(db store.StorageInterface, coord *coordinator.Coordinator) (http.Handler, error) {
 	r := gin.Default()
 	staticPath := config.HTTP.StaticPath
 	if staticPath == "" {
@@ -66,7 +61,7 @@ func New(db store.StorageInterface, coord *coordinator.Coordinator) (http.Handle
 	}
 	r.POST("/coordinator/connect", onCoordinatorConnect(coord))
 	r.POST("/coordinator/disconnect", onCoordinatorDisconnect(coord))
-	r.GET("/api/servers", onApiServers(db))
+	r.GET("/api/servers", onApiServers())
 	r.GET("/api/news", onApiNews(db))
 	r.GET("/discord", func(c *gin.Context) {
 		c.Redirect(http.StatusTemporaryRedirect, "https://discord.gg/caQKCWFMrN")
@@ -307,35 +302,10 @@ func onApiNews(db store.StorageInterface) gin.HandlerFunc {
 	}
 }
 
-func onApiServers(db store.StorageInterface) gin.HandlerFunc {
-	type st struct {
-		*store.Server
-		A2S *a2s.ServerInfo `json:"a2s"`
-	}
+func onApiServers() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		srvs, err := db.Servers(context.Background())
-		if err != nil {
-			responseErr(c, http.StatusInternalServerError, "Internal error")
-			return
-		}
-
-		for i, s := range srvs {
-			pc := int(rand.Int31n(24))
-			if i%2 == 0 {
-				pc = 24
-			}
-			s.State = &extra.Status{
-				Map:          "pl_thundermountain",
-				PlayersMax:   24,
-				PlayersCount: pc,
-			}
-		}
-		var x []st
-		states := servers.Servers()
-		for _, srv := range srvs {
-			x = append(x, st{Server: srv, A2S: states[srv.NameShort]})
-		}
-		responseOK(c, http.StatusOK, x)
+		states := servers()
+		responseOK(c, http.StatusOK, states)
 	}
 }
 
@@ -367,7 +337,7 @@ func onCoordinatorDisconnect(coord *coordinator.Coordinator) gin.HandlerFunc {
 	}
 }
 
-func (a *App) Serve(opts HTTPOpts) error {
+func (a *Web) Serve(opts HTTPOpts) error {
 	opts.Handler = a.router
 	a.srv = NewHTTPServer(opts)
 
@@ -730,7 +700,7 @@ func onPatreonCallback(db store.StorageInterface) gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
-		pc, errPc := donation.NewPatreonClient()
+		pc, errPc := NewPatreonClient()
 		if errPc != nil {
 			log.WithError(errPc).Errorf("Failed to create patreon client: %s", errPc)
 			c.AbortWithStatus(http.StatusInternalServerError)

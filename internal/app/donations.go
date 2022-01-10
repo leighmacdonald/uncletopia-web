@@ -1,4 +1,4 @@
-package donation
+package app
 
 import (
 	"context"
